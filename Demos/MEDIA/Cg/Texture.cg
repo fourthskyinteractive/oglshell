@@ -1,0 +1,42 @@
+//
+// File: /Demos/MEDIA/Cg/Texture.cg
+//
+
+struct VS_INPUT
+{                                           
+    float4          Position        : ATTR0;
+    float2          TexCoord        : ATTR1;
+};
+
+struct VS_OUTPUT
+{
+    float4          Position        : POSITION;
+    float2          TexCoord        : TEXCOORD0;
+};
+
+//
+// VS
+//
+VS_OUTPUT VS(
+             VS_INPUT In,
+             uniform float4x4 ModelViewProj : state.matrix.mvp
+             )
+{
+    VS_OUTPUT Out;
+    
+    Out.Position = mul( ModelViewProj, In.Position );
+    Out.TexCoord = In.TexCoord;
+
+    return Out;
+}
+
+//
+// FS
+//
+float4 FS(
+          VS_OUTPUT In, 
+          uniform sampler2D Tex0
+          ) : COLOR
+{
+    return tex2D( Tex0, In.TexCoord );
+}

@@ -1,0 +1,38 @@
+//
+// File: /Demos/MEDIA/Cg/MVP.cg
+//
+
+struct VS_INPUT
+{                                           
+    float4          Position        : ATTR0;
+};
+
+struct VS_OUTPUT
+{
+    float4          Position        : POSITION;
+};
+
+//
+// VS
+//
+VS_OUTPUT VS(
+             VS_INPUT In,
+             uniform float4x4 ModelViewProj : state.matrix.mvp
+             )
+{
+    VS_OUTPUT Out;
+    
+    Out.Position = mul( ModelViewProj, In.Position );
+
+    return Out;
+}
+
+//
+// FS
+//
+float4 FS(
+          VS_OUTPUT In
+          ) : COLOR
+{
+    return float4( 1.0, 1.0, 0.0, 1.0 );
+}
