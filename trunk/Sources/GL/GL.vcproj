@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="8,00"
 	Name="GL"
-	ProjectGUID="{5934E798-6219-4A27-96D5-4ED1CDA0B91A}"
+	ProjectGUID="{4133A223-5615-4B34-9D29-CC8412DE05CB}"
 	RootNamespace="GL"
 	Keyword="Win32Proj"
 	>

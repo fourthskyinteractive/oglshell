@@ -15,7 +15,7 @@ Lesser General Public License for more details.
 You should have received a copy of the GNU Lesser General Public
 License along with this library. If not, see http://www.gnu.org/licenses
 
-e-mail: bob.vilson@gmail.com
+e-mail: victor.coda@gmail.com
 */
 
 // Τΰιλ: /GL/FrameBuffer.h
@@ -37,7 +37,7 @@ namespace GL
     public:
         struct DLLAPI TCaps
         {
-                                TCaps();
+                                TCaps           ();
 
             GLint               MaxWidth;
             GLint               MaxHeight;
@@ -209,7 +209,7 @@ namespace GL
 
         struct DLLAPI TDesc
         {
-                                TDesc               ();
+                                TDesc           ();
 
             GLsizei             RedSize;
             GLsizei             GreenSize;

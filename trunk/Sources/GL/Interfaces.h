@@ -15,7 +15,7 @@ Lesser General Public License for more details.
 You should have received a copy of the GNU Lesser General Public
 License along with this library. If not, see http://www.gnu.org/licenses
 
-e-mail: bob.vilson@gmail.com
+e-mail: victor.coda@gmail.com
 */
 
 // Τΰιλ: /GL/Interfaces.h
@@ -306,7 +306,7 @@ namespace GL
         virtual void        SetIndexBuffer              ( Ptr<const CBuffer> Buffer, GLenum IndexType ) = 0; 
         virtual void        SetPackPixelBuffer          ( Ptr<CBuffer> Buffer ) = 0;
 		virtual void        SetUnpackPixelBuffer        ( Ptr<const CBuffer> Buffer ) = 0;
-        virtual void        SetTransformFeedbackBuffer  ( GLuint Index, Ptr<CBuffer> Buffer, GLintptr Offset, GLsizeiptr Size = -1 ) = 0;
+        virtual void        SetTransformFeedbackBuffer  ( GLuint Index, Ptr<CBuffer> Buffer, GLintptr Offset = 0, GLsizeiptr Size = -1 ) = 0;
 
         //
         // Conditional/Feedback rendering

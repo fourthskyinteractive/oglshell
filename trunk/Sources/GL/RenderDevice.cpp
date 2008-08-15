@@ -15,7 +15,7 @@ Lesser General Public License for more details.
 You should have received a copy of the GNU Lesser General Public
 License along with this library. If not, see http://www.gnu.org/licenses
 
-e-mail: bob.vilson@gmail.com
+e-mail: victor.coda@gmail.com
 */
 
 // Τΰιλ: /GL/RenderDevice.cpp
@@ -170,8 +170,6 @@ namespace GL
                                                GLenum Mode, const char *Method 
                                                ) const
     {
-        
-
         switch (Mode)
         {
         case GL_POINTS:
