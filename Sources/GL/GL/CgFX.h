@@ -1,7 +1,5 @@
 /*
-This file is a part of Z-Trek 3D engine math library. 
-You can use it freely in your proprietary applications.
-
+OpenGL Shell - open source C++ wrapper for use in OOP programs.
 Copyright (C) 2005-2008 Victor Coda.
 
 This library is free software; you can redistribute it and/or
@@ -16,10 +14,42 @@ Lesser General Public License for more details.
 
 You should have received a copy of the GNU Lesser General Public
 License along with this library. If not, see http://www.gnu.org/licenses
+
+e-mail: victor.coda@gmail.com
 */
 
-// Τΰιλ: /Math/Precompiled.cpp
+// Τΰιλ: /GL/GL/CgFX.h
 //
 
-#include "Precompiled.h"
-#pragma hdrstop
+#ifdef _MSC_VER
+#pragma once
+#endif
+
+#ifndef __GL_CG_FX_H__
+#define __GL_CG_FX_H__
+
+#ifdef CG_SDK
+
+namespace GL
+{
+    // TODO: Implement.
+    
+    class CCgEffect : public CObject
+    {
+    public:
+    
+        //
+        // Interface
+        //
+        
+    private:
+        
+        //
+        // Class members
+        //
+    };
+}
+
+#endif // CG_SDK
+
+#endif // __GL_CG_FX_H__

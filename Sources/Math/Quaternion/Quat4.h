@@ -71,11 +71,11 @@ namespace Math
         T                   Normalize();
         void                Conjugate();
         Quat4<T>            GetConjugated() const;
-        void                Inverse();
+        void                Invert();
         Quat4<T>            GetInverted() const;
 
         Vec3<T>             ToVec3() const;
-        Quat3<T>            ToQuat3() const; // Ñì. Postpone.h
+        Quat3<T>            ToQuat3() const; // Cì. Postponed.h
         Mat3                ToMat3() const;
         Mat3                ToMat3FromUnit() const; 
         //Euler               ToEuler() const; // Postpone.h ?
@@ -279,10 +279,10 @@ namespace Math
     }
 
     //
-    // Inverse
+    // Invert
     //
     template <typename T>
-    inline void Quat4<T>::Inverse()
+    inline void Quat4<T>::Invert()
     {
         Conjugate();
         *this /= Norm();
@@ -645,10 +645,10 @@ namespace Math
     {       
         assert( t >= 0.0 && t <= 1.0 );
 
-#ifdef _DEBUG
+    #ifdef _DEBUG
         a.Assume();
         b.Assume();
-#endif
+    #endif
  
         Quat4<T> c;
 
@@ -670,10 +670,10 @@ namespace Math
     {
         assert( t >= static_cast<T>( 0.0 ) && t <= static_cast<T>( 1.0 ) );
 
-#ifdef _DEBUG
+    #ifdef _DEBUG
         a.Assume();
         b.Assume();
-#endif
+    #endif
 
         T Cosom = DotProduct( a, b );
         Quat4<T> q;
@@ -764,7 +764,10 @@ namespace Math
     // http://www.euclideanspace.com/Maths/geometry/elements/plane/planeOnPlane/
     //
     template <typename T> 
-    inline void SwingTwistDecomposition( const Quat4<T>& Rot, const Vec3<T>& Dir, Quat4<T> *Swing, Quat4<T> *Twist )
+    inline void SwingTwistDecomposition( 
+                                        const Quat4<T>& Rot, const Vec3<T>& Dir, 
+                                        Quat4<T> *Swing, Quat4<T> *Twist 
+                                        )
     {   
         T SquareLength = Dir.GetSquareLength();
         Vec3<T> p, r = Rot.ToVec3();

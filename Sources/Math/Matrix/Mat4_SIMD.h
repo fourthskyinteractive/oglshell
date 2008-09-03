@@ -36,9 +36,8 @@ namespace MathSIMD
     class SIMD_ALIGN Mat4
     {
     public:
-        struct Vec
+        struct Vec4
         {
-            // TODO : Union + оператор [] ?
             float           x, y, z, w;
         };
 
@@ -50,7 +49,7 @@ namespace MathSIMD
 
         union 
         {
-            Vec             m[ 4 ];
+            Vec4            m[ 4 ];
 
             struct {
                 __m64       m0q0, m0q1, m1q0, m1q1, m2q0, m2q1, m3q0, m3q1;
@@ -95,8 +94,8 @@ namespace MathSIMD
         // Операторы
         //
 
-        const Vec&          operator [] (const int& n) const;
-        Vec&                operator [] (const int& n);
+        const Vec4&         operator [] (const int& n) const;
+        Vec4&               operator [] (const int& n);
     };
 
     //
@@ -109,8 +108,10 @@ namespace MathSIMD
     //
     // Constructor
     //
-    inline Mat4::Mat4( const __m64& m0, const __m64& m1, const __m64& m2, const __m64& m3,
-        const __m64& m4, const __m64& m5, const __m64& m6, const __m64& m7 ):
+    inline Mat4::Mat4( 
+                      const __m64& m0, const __m64& m1, const __m64& m2, const __m64& m3,
+                      const __m64& m4, const __m64& m5, const __m64& m6, const __m64& m7 
+                      ):
 
         m0q0( m0 ), m0q1( m1 ), m1q0( m2 ), m1q1( m3 ), 
         m2q0( m4 ), m2q1( m5 ), m3q0( m6 ), m3q1( m7 )
@@ -120,7 +121,9 @@ namespace MathSIMD
     //
     // Constructor
     //
-    inline Mat4::Mat4( const __m128& m1, const __m128& m2, const __m128& m3, const __m128& m4 ):
+    inline Mat4::Mat4( 
+                      const __m128& m1, const __m128& m2, const __m128& m3, const __m128& m4 
+                      ):
         m1( m1 ), m2( m2 ), m3( m3 ), m4( m4 )
     {                                
     }
@@ -139,8 +142,12 @@ namespace MathSIMD
     //
     // Constructor
     //
-    inline Mat4::Mat4( float m00, float m01, float m02, float m03, float m10, float m11, float m12, float m13, 
-        float m20, float m21, float m22, float m23, float m30, float m31, float m32, float m33 )
+    inline Mat4::Mat4( 
+                      float m00, float m01, float m02, float m03, 
+                      float m10, float m11, float m12, float m13, 
+                      float m20, float m21, float m22, float m23,
+                      float m30, float m31, float m32, float m33
+                      )
     {
         m1 = _mm_set_ps( m03, m02, m01, m00 );
         m2 = _mm_set_ps( m13, m12, m11, m10 );
@@ -306,22 +313,18 @@ namespace MathSIMD
     //
     // operator []
     //
-    inline const Mat4::Vec& Mat4::operator [] (const int& n) const
+    inline const Mat4::Vec4& Mat4::operator [] (const int& n) const
     {
-    #ifdef MATH_ASSERT_RANGES
-        assert( n >= 0 && n < 4 );
-    #endif
+        ASSERT_RANGE( n, 0, 4 );
         return m[ n ];
     }
 
     //
     // operator []
     //
-    inline Mat4::Vec& Mat4::operator [] (const int& n)
+    inline Mat4::Vec4& Mat4::operator [] (const int& n)
     {
-    #ifdef MATH_ASSERT_RANGES
-        assert( n >= 0 && n < 4 );
-    #endif
+        ASSERT_RANGE( n, 0, 4 );
         return m[ n ];
     }
 }

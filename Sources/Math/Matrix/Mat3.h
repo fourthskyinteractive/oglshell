@@ -66,7 +66,7 @@ namespace Math
         float               GetDeterminant() const;
 
         Mat3                GetTransposed() const;
-        bool                Inverse();
+        bool                Invert();
         Mat3                GetInverted() const;
         void                OrthoNormalize();
         Mat3                GetOrthoNormalized() const;

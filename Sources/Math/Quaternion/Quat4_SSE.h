@@ -517,9 +517,7 @@ namespace MathSIMD
     //
     inline const float& Quat4_SSE::operator [] (const int& n) const
     {
-    #ifdef MATH_ASSERT_RANGES
-        assert( n >= 0 && n < 4 );
-    #endif
+        ASSERT_RANGE( n, 0, 4 );
         return vec.m128_f32[ n ]; 
     }
 
@@ -528,9 +526,7 @@ namespace MathSIMD
     //
     inline float& Quat4_SSE::operator [] (const int& n)
     {
-    #ifdef MATH_ASSERT_RANGES
-        assert( n >= 0 && n < 4 );
-    #endif
+        ASSERT_RANGE( n, 0, 4 );
         return vec.m128_f32[ n ]; 
     }
 }

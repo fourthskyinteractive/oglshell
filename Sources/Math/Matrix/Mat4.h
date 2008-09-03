@@ -59,7 +59,7 @@ namespace Math
         float               GetDeterminant() const;
                                                           
         Mat4                GetTransposed() const;
-        bool                Inverse();
+        bool                Invert();
         Mat4                GetInverted() const;
         void                OrthoNormalize();
         Mat4                GetOrthoNormalized() const;
@@ -70,20 +70,24 @@ namespace Math
         void                RotationY( float Angle );
         void                RotationZ( float Angle );
         void                RotationXYZ( float x, float y, float z );
+        void                RotationAroundAxis( const Vec3<float>& Axis, float Angle );
         void                Scaling( float x, float y, float z );
         void                ReflectionXY();
         void                ReflectionYZ();
         void                ReflectionZX();
 
-        bool                Ortho( float Left, float Right, float Bottom, float Top, float ZNear, float ZFar );
-        bool                Ortho2D( float Left, float Right, float Bottom, float Top );
-        bool                PerspectiveRHS( float Fovy, float Aspect, float ZNear, float ZFar );
-        bool                InfinitePerspectiveRHS( float Fovy, float Aspect, float ZNear, float ZFar );
-        bool                PerspectiveLHS( float Fovy, float Aspect, float ZNear, float ZFar );
-        bool                InfinitePerspectiveLHS( float Fovy, float Aspect, float ZNear, float ZFar );
-    
-        void                LookAt( const Vec3<float>& Eye, const Vec3<float>& Dir, const Vec3<float>& Up );
-        void                LookAtGL( const Vec3<float>& Eye, const Vec3<float>& Center, const Vec3<float>& Up );
+        bool                OrthoLH( float Left, float Right, float Bottom, float Top, float Near, float Far );
+        bool                OrthoRH( float Left, float Right, float Bottom, float Top, float Near, float Far );
+        bool                Ortho2DLH( float Left, float Right, float Bottom, float Top );
+        bool                Ortho2DRH( float Left, float Right, float Bottom, float Top );
+        bool                PerspectiveLH( float FOVy, float Aspect, float Near, float Far );
+        bool                PerspectiveRH( float FOVy, float Aspect, float Near, float Far );
+        bool                PerspectiveLH( float Left, float Right, float Bottom, float Top, float Near, float Far );
+        bool                PerspectiveRH( float Left, float Right, float Bottom, float Top, float Near, float Far );
+        bool                InfinitePerspectiveLH( float FOVy, float Aspect, float Near, float Far );
+        bool                InfinitePerspectiveRH( float FOVy, float Aspect, float Near, float Far );
+        bool                LookAtLH( const Vec3<float>& Eye, const Vec3<float>& At, const Vec3<float>& Up );
+        bool                LookAtRH( const Vec3<float>& Eye, const Vec3<float>& At, const Vec3<float>& Up );
 
         void                SetRotation( const Mat3& m );
         Mat3                GetRotation() const;

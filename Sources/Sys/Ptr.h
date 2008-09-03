@@ -199,16 +199,16 @@ namespace Sys
     // operator *
     //
     template <typename T>
-    inline T& Ptr<T>::operator * () const
+    FORCEINLINE T& Ptr<T>::operator * () const
     {
-        return m_Counter.GetPointer();
+        return *m_Counter.GetPointer();
     }
         
     //
     // operator ->
     //
     template <typename T>
-    __forceinline T *Ptr<T>::operator -> () const
+    FORCEINLINE T *Ptr<T>::operator -> () const
     {
         return m_Counter.GetPointer();
     }

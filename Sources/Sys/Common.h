@@ -76,7 +76,7 @@ namespace Sys
     };
 
     //  Исключение при малом кол-ве памяти.
-    //  Бросается в случае, если невозможно выделить достаточно системной- или видеопамяти. 
+    //  Бросается в случае, если невозможно выделить достаточно системной или видеопамяти. 
 
     class CBadAllocException : public CException
     {
@@ -89,7 +89,7 @@ namespace Sys
     };
 
     //  Критическое исключение.
-    //  Бросается в случае, например, если программа попробовала все возможные Сode Path и все из них вернули ошибку.
+    //  Бросается в случае, например, если программа попробовала все возможные codepath и все из них вернули ошибку.
 
     class CCriticalException : public CException
     {
@@ -111,27 +111,24 @@ namespace Sys
 
                             CFatalException     ( const IRTTIObject *Obj, const char *FormatStr, ... );
                             CFatalException     ( const char *ClsName, const char *FormatStr, ... );
-
-    protected:
-                            CFatalException     ();
     };
 
     //  Исключение для разработчика.
-    //  Бросается в случае обнаружения неверных параметров или неверных вызовов. Не должно бросаться в Release версии программы.
+    //  Бросается в случае обнаружения неверных параметров или неверных вызовов. 
+    //  В идеале это исключение не должно бросаться в release-версии программы.
 
     class CDeveloperException : public CException
     {
     public:
         enum EError
         {
-            ERR_NO_CODE = 0,
-            ERR_INVALID_ENUM, 
-            ERR_INVALID_VALUE,
-            ERR_INVALID_PARAMETER,
-            ERR_INVALID_RAW_POINTER,
-            ERR_INVALID_CALL,
-            ERR_INVALID_THROW,
-            ERR_METHOD_NOT_IMPLEMENTED
+            ERROR_OK = 0,
+            ERROR_INVALID_ENUM,
+            ERROR_INVALID_PARAM,
+            ERROR_INVALID_RAW_POINTER,
+            ERROR_INVALID_CALL,
+            ERROR_INVALID_THROW, 
+            ERROR_METHOD_NOT_IMPLEMENTED,
         };
 
     public:
@@ -148,7 +145,7 @@ namespace Sys
         EError              GetErrorCode        () const;
 
     private:
-        string              CodeToString        ( EError Code ) const;
+        string              ToString            ( EError Code ) const;
 
         //
         // Class members

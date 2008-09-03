@@ -30,9 +30,6 @@ License along with this library. If not, see http://www.gnu.org/licenses
 
 namespace Math
 {
-    template <typename T>
-    class Poly3;
-
     //  Плоскость, описываемая уравнением вида Ax + By + Cz + D = 0.
 
     template <typename T>
@@ -53,15 +50,13 @@ namespace Math
                             Plane();
 
                             Plane( const T& x, const T& y, const T& z, const T& d );
-                            Plane( const Vec3<T>& n, const T&d );
+        TEMPLATE_Y          Plane( const Vec3<Y>& n, const Y& d );
 
-                            Plane( const Vec3<T>& a, const Vec3<T>& b, const Vec3<T>& c );
-                            Plane( const Vec4<T>& a, const Vec4<T>& b, const Vec4<T>& c );
-                            Plane( const Vec3<T> p[ 3 ] );
-                            Plane( const Vec4<T> p[ 3 ] );
+        TEMPLATE_Y          Plane( const Vec3<Y>& a, const Vec3<Y>& b, const Vec3<Y>& c );
+        TEMPLATE_Y          Plane( const Plane<Y>& p );
 
-                            Plane( const T Eq[ 4 ] );
-                            Plane( const vector<T>& Eq );
+        TEMPLATE_Y          Plane( const Y eq[ 4 ] );
+        TEMPLATE_Y          Plane( const vector<Y>& eq );
 
         //
         // Interface
@@ -73,7 +68,7 @@ namespace Math
         bool                Compare( const Plane<T>& p, const T& Eps = EPSILON ) const;
 
         T                   GetDistance( const Vec3<T>& Pt ) const;
-                                                                                                                            
+
         void                Rotate( const Mat3& m );
         Plane<T>            GetRotated( const Mat3& m ) const;
         void                Rotate( const Mat4& m );
@@ -81,12 +76,7 @@ namespace Math
         void                Rotate( const Quat4<T>& q );
         Plane<T>            GetRotated( const Quat4<T>& q ) const;
 
-        bool                IntersectLine( const Vec3<T>& Start, const Vec3<T>& End, Vec3<T> *Pt = NULL ) const;
-        bool                IntersectRay( const Vec3<T>& Start, const Vec3<T>& Dir, float *Scale = NULL ) const;
-        bool                IntersectRay( const Vec3<T>& Start, const Vec3<T>& Dir, Vec3<T> *Pt = NULL ) const;
-        
-        void                ClipPoly( const Poly3<T>& Poly, Poly3<T> *ClippedPoly ) const;
-        void                ClipPoly( Poly3<T> *Poly ) const;
+        void                CalcDenormEquation( const Vec3<T> &a, const Vec3<T>& b, const Vec3<T>& c );
 
         TEMPLATE_Y Vec4<Y>  ToVec4() const;
         T*                  ToPtr();
@@ -123,17 +113,20 @@ namespace Math
     //
     // Constructor
     //
-    template <typename T>
-    inline Plane<T>::Plane( const Vec3<T>& n, const T& d ): 
+    template <typename T> template <typename Y>
+    inline Plane<T>::Plane( const Vec3<Y>& n, const Y& d ): 
         n( n ), d( d ) 
     {
+    #ifdef _DEBUG
+        n.Assume();
+    #endif
     }
 
     //
     // Constructor
     //
-    template <typename T>
-    inline Plane<T>::Plane( const Vec3<T>& a, const Vec3<T>& b, const Vec3<T>& c ):
+    template <typename T> template <typename Y>
+    inline Plane<T>::Plane( const Vec3<Y>& a, const Vec3<Y>& b, const Vec3<Y>& c ):
         n( CrossProduct( b - a, c - a ) ), d( static_cast<T>( 0.0 ) )
     {
         n.Normalize();
@@ -143,53 +136,29 @@ namespace Math
     //
     // Constructor
     //
-    template <typename T>
-    inline Plane<T>::Plane( const Vec4<T>& a, const Vec4<T>& b, const Vec4<T>& c ):
-        n( CrossProduct( b - a, c - a ) ), d( static_cast<T>( 0.0 ) )
-    {
-        n.Normalize();
-        d = -DotProduct( n, a );
-    }
-
-    //
-    // Constructor
-    //
-    template <typename T>
-    inline Plane<T>::Plane( const Vec3<T> p[ 3 ] ):
-        n( CrossProduct( p[ 1 ] - p[ 0 ], p[ 2 ] - p[ 0 ] ) ), d( static_cast<T>( 0.0 ) )
-    {
-        n.Normalize();
-        d = -DotProduct( n, p[0] );
-    }
-
-    //
-    // Constructor
-    //
-    template <typename T>
-    inline Plane<T>::Plane( const Vec4<T> p[ 3 ] ):
-        n( CrossProduct( p[ 1 ] - p[ 0 ], p[ 2 ] - p[ 0 ] ) ), d( static_cast<T>( 0.0 ) )
-    {
-        n.Normalize();
-        d = -DotProduct( n, p[0] );
-    }
-
-    //
-    // Constructor
-    //
-    template <typename T>
-    inline Plane<T>::Plane( const T Eq[ 4 ] ): 
-        n( Eq[ 0 ], Eq[ 1 ], Eq[ 2 ] ), d( Eq[ 3 ] ) 
+    template <typename T> template <typename Y>
+    inline Plane<T>::Plane( const Plane<Y>& p ):
+        n( p.n ), d( p.d )
     {
     }
 
     //
     // Constructor
     //
-    template <typename T>
-    inline Plane<T>::Plane( const vector<T>& Eq ): 
-        n( Eq[0], Eq[1], Eq[2] ), d( eEq[3] ) 
+    template <typename T> template <typename Y>
+    inline Plane<T>::Plane( const Y eq[ 4 ] ): 
+        n( eq[ 0 ], eq[ 1 ], eq[ 2 ] ), d( eq[ 3 ] ) 
     {
-        assert( Eq.size() >= 4 );
+    }
+
+    //
+    // Constructor
+    //
+    template <typename T> template <typename Y>
+    inline Plane<T>::Plane( const vector<Y>& eq ): 
+        n( eq[ 0 ], eq[ 1 ], eq[ 2 ] ), d( eq[ 3 ] ) 
+    {
+        assert( eq.size() >= 4 );
     }
 
     //
@@ -208,7 +177,7 @@ namespace Math
     template <typename T>
     inline bool Plane<T>::IsZero() const
     {
-        return n.IsZero() && d == static_cast<T>( 0.0 );
+        return n.IsZero() && (d == static_cast<T>( 0.0 ));
     }
 
     //
@@ -240,12 +209,10 @@ namespace Math
     template <typename T>
     inline void Plane<T>::Rotate( const Mat3& m )
     {
-        Vec3<T> Pt = n * -d;
+        Vec3<T> Pt = (n * -d) * m;
 
         n *= m;
         n.Normalize();
-
-        Pt *= m;
 
         d = -DotProduct( n, Pt );
     }
@@ -269,17 +236,13 @@ namespace Math
     template <typename T>
     inline void Plane<T>::Rotate( const Mat4& m )
     {
-        Vec4<T> n( this->n, static_cast<T>( 0.0 ) );
+        Vec4<T> Pt = Vec4<T>( n * -d, static_cast<T>( 1.0 ) ) * m;
+        Vec4<T> n4 = Vec4<T>( n, static_cast<T>( 0.0 ) ) * m;
 
-        n *= m;
+        n = n4.ToVec3<T>();
         n.Normalize();
 
-        Vec4<T> Pt( this->n * -d, static_cast<T>( 1.0 ) );
-
-        Pt *= m;
-    
-        this->n = n.ToVec3<T>();
-        d = -DotProduct( n, Pt );
+        d = -DotProduct( n, Pt.ToVec3<T>() );
     }
 
     //
@@ -301,12 +264,10 @@ namespace Math
     template <typename T>
     inline void Plane<T>::Rotate( const Quat4<T>& q )
     {
-        Vec3<T> Pt = n * -d;
+        Vec3<T> Pt = (n * -d) * q;
 
         n *= q;
         n.Normalize();
-
-        Pt *= q;
 
         d = -DotProduct( n, Pt );
     }
@@ -325,119 +286,13 @@ namespace Math
     }
 
     //
-    // IntersectLine
-    //
-    template <typename T> 
-    inline bool Plane<T>::IntersectLine( const Vec3<T>& Start, const Vec3<T>& End, Vec3<T> *Pt ) const
-    {
-        T Dist[ 3 ];
-
-        Dist[ 0 ] = GetDistance( Start );
-        Dist[ 1 ] = GetDistance( End );
-        Dist[ 2 ] = Dist[ 0 ] - Dist[ 1 ];
-
-        if (Abs( Dist[ 2 ] ) < EPSILON)
-            return false;
-        if ((Dist[ 0 ] > 0.0 && Dist[ 1 ] > 0.0) || (Dist[ 0 ] < 0.0 && Dist[ 1 ] < 0.0))
-            return false;
-
-        T s = Dist[ 0 ] / Dist[ 2 ];
-        if (s < static_cast<T>( 0.0 ) || s > static_cast<T>( 1.0 ))
-            return false;
-        if (Pt)
-            *Pt = (End * Dist[ 0 ] - Start * Dist[ 1 ]) / Dist[ 2 ]; 
-    
-        return true;
-    }
-
-    //
-    // IntersectRay
-    //
-    template <typename T> 
-    inline bool Plane<T>::IntersectRay( const Vec3<T>& Start, const Vec3<T>& Dir, float *Scale ) const
-    {
-        T Dist[ 2 ];
-
-        Dist[ 1 ] = DotProduct( n, Dir );
-        if (Abs( Dist[ 1 ] ) < EPSILON)
-            return false;
-
-        Dist[ 0 ] = GetDistance( Start );
-        if (Scale)
-            *Scale = -(Dist[ 0 ] / Dist[ 1 ]);
-
-        return true;
-    }
-
-    //
-    // IntersectRay
-    //
-    template <typename T> 
-    inline bool Plane<T>::IntersectRay( const Vec3<T>& Start, const Vec3<T>& Dir, Vec3<T> *Pt ) const
-    {
-        T Scale;
-
-        if (!IntersectRay( Start, Dir, &Scale ))
-            return false;
-        if (Pt)
-            *Pt = Start + Dir * Scale;
-
-        return true;
-    }
-
-    //
-    // ClipPoly
+    // CalcDenormEquation
     //
     template <typename T>
-    inline void Plane<T>::ClipPoly( const Poly3<T>& Poly, Poly3<T> *ClippedPoly ) const
+    inline void Plane<T>::CalcDenormEquation( const Vec3<T> &a, const Vec3<T>& b, const Vec3<T>& c )
     {
-        int N = Poly.GetNumPoints();
-        if (N < 3)
-            return;
-
-        ClippedPoly->Clear();
-
-        for (int i = 0; i < N; ++i) 
-        {
-            Vec3<T> Pt[ 2 ];
-
-            Pt[ 0 ] = Poly[ i ];
-            Pt[ 1 ] = Poly[ (i + 1) % N ];
-
-            T Dist[ 2 ];
-
-            Dist[ 0 ] = GetDistance( Pt[ 0 ] );
-            Dist[ 1 ] = GetDistance( Pt[ 1 ] );
-
-            if (Dist[ 0 ] >= static_cast<T>( 0.0 ))
-                ClippedPoly->AddPoint( Pt[0] );
-            if (Dist[ 0 ] * Dist[ 1 ] < static_cast<T>( 0.0 )) 
-            {
-                float t[ 2 ];
-
-                t[ 0 ] = Dist[ 1 ] / (Dist[ 1 ] - Dist[ 0 ]);
-                t[ 1 ] = -Dist[ 0 ] / (Dist[ 1 ] - Dist[ 0 ]);
-                ClippedPoly->AddPoint( Pt[0] * t[0] + Pt[1] * t[1] );
-            }
-        }
-
-        if (ClippedPoly->GetNumPoints() < 3)
-            ClippedPoly->Clear();
-    }
-
-    //
-    // ClipPoly
-    //
-    template <typename T>
-    inline void Plane<T>::ClipPoly( Poly3<T> *Poly ) const
-    {
-        if (Poly->GetNumPoints() < 3)
-            return;
-
-        Poly3<T> ClippedPoly;
-
-        ClipPoly( *Poly, &ClippedPoly );
-        *Poly = ClippedPoly;
+        n = CrossProduct( b - a, c - a );
+        d = -DotProduct( n, a ); 
     }
 
     //
@@ -455,7 +310,7 @@ namespace Math
     template <typename T>
     inline T *Plane<T>::ToPtr()
     {
-        return &n.x;
+        return vec;
     }
 
     //
@@ -464,7 +319,7 @@ namespace Math
     template <typename T>
     inline const T *Plane<T>::ToPtr() const
     {
-        return &n.x;
+        return vec;
     }
 
     //
@@ -491,9 +346,7 @@ namespace Math
     template <typename T> 
     inline const T &Plane<T>::operator [] (const int& n) const               
     { 
-    #ifdef MATH_ASSERT_RANGES
-        assert( n >= 0 && n < 4 );
-    #endif
+        ASSERT_RANGE( n, 0, 4 );
         return eq[ n ];
     }
 
@@ -503,9 +356,7 @@ namespace Math
     template <typename T> 
     inline T &Plane<T>::operator [] (const int& n)               
     { 
-    #ifdef MATH_ASSERT_RANGES
-        assert( n >= 0 && n < 4 );
-    #endif
+        ASSERT_RANGE( n, 0, 4 );
         return eq[ n ];
     }
 }

@@ -53,8 +53,9 @@ namespace MathSIMD
 
                             Plane_SSE( const float& x, const float& y, const float& z, const float& d );
                             Plane_SSE( const Vec4_SSE& n, const float& d );
+
                             Plane_SSE( const Vec4_SSE& a, const Vec4_SSE& b, const Vec4_SSE& c );
-                            Plane_SSE( const Vec4_SSE& a, const Vec4_SSE& b, const Vec4_SSE& c, bool Normalize );
+                            Plane_SSE( int Dummy, const Vec4_SSE& a, const Vec4_SSE& b, const Vec4_SSE& c ); // Нормаль не нормализуется!
 
         TEMPLATE_Y          Plane_SSE( const Math::Plane<Y>& p );
                                 
@@ -71,7 +72,8 @@ namespace MathSIMD
         bool                Compare( const Plane_SSE& p) const;
 
         float               GetDistance( const Vec4_SSE& Pt ) const;
-        bool                IntersectLine( const Vec4_SSE& Start, const Vec4_SSE& End, Vec4_SSE *Pt = NULL ) const;
+        bool                IntersectLine( const Vec4_SSE& Start, const Vec4_SSE& End, 
+                                Vec4_SSE *Pt ) const;
 
         //
         // Operators
@@ -108,19 +110,18 @@ namespace MathSIMD
     // Constructor
     //
     inline Plane_SSE::Plane_SSE( const Vec4_SSE& a, const Vec4_SSE& b, const Vec4_SSE& c ):
-        n( CrossProduct( b - a, c - a ) ), d( -DotProduct( n, a ) )
+        n( CrossProduct( b - a, c - a ) ), d( 0.0f )
     {
+        n.Normalize();
+        d = -DotProduct( n, a );
     }
 
     //
     // Constructor
     //
-    inline Plane_SSE::Plane_SSE( const Vec4_SSE& a, const Vec4_SSE& b, const Vec4_SSE& c, bool Normalize ):
-        n( CrossProduct( b - a, c - a ) ), d( 0.0f )
+    inline Plane_SSE::Plane_SSE( int Dummy, const Vec4_SSE& a, const Vec4_SSE& b, const Vec4_SSE& c ):
+        n( CrossProduct( b - a, c - a ) ), d( -DotProduct( n, a ) )
     {
-        if (Normalize)
-            n.Normalize();
-        d = -DotProduct( n, a );
     }
 
     //
@@ -163,7 +164,7 @@ namespace MathSIMD
     //
     inline bool Plane_SSE::IsZero() const
     {
-        return n.IsZero() && d == 0.0f;
+        return n.IsZero() && (d == 0.0f);
     }
 
     //
@@ -190,8 +191,13 @@ namespace MathSIMD
     //
     // IntersectLine
     //
-    inline bool Plane_SSE::IntersectLine( const Vec4_SSE& Start, const Vec4_SSE& End, Vec4_SSE *Pt ) const
+    inline bool Plane_SSE::IntersectLine( 
+                                         const Vec4_SSE& Start, const Vec4_SSE& End, 
+                                         Vec4_SSE *Pt 
+                                         ) const
     {
+        assert( Pt != NULL );
+
         float d[ 3 ];
 
         d[ 0 ] = GetDistance( Start );
@@ -206,8 +212,8 @@ namespace MathSIMD
         float s = d[ 0 ] / d[ 2 ];
         if (s < 0.0f || s > 1.0f)
             return false;
-        if (Pt)
-            *Pt = (End * d[ 0 ] - Start * d[ 1 ]) / d[ 2 ];
+
+        *Pt = (End * d[ 0 ] - Start * d[ 1 ]) / d[ 2 ];
 
         return true;
     }
@@ -217,9 +223,7 @@ namespace MathSIMD
     //
     inline const float& Plane_SSE::operator [] (const int& n) const               
     { 
-    #ifdef MATH_ASSERT_RANGES
-        assert( n >= 0 && n < 4 );
-    #endif
+        ASSERT_RANGE( n, 0, 4 );
         return eq[ n ];
     }
 
@@ -228,9 +232,7 @@ namespace MathSIMD
     //
     inline float& Plane_SSE::operator [] (const int& n)               
     { 
-    #ifdef MATH_ASSERT_RANGES
-        assert( n >= 0 && n < 4 );
-    #endif
+        ASSERT_RANGE( n, 0, 4 );
         return eq[ n ];
     }
 }

@@ -103,8 +103,10 @@ namespace MathSIMD
     //
     // Constructor
     //
-    inline Mat4_3DNow::Mat4_3DNow( const __m64& m0, const __m64& m1, const __m64& m2, const __m64& m3,
-        const __m64& m4, const __m64& m5, const __m64& m6, const __m64& m7 ):
+    inline Mat4_3DNow::Mat4_3DNow( 
+                                  const __m64& m0, const __m64& m1, const __m64& m2, const __m64& m3,
+                                  const __m64& m4, const __m64& m5, const __m64& m6, const __m64& m7
+                                  ):
 
         Mat4( m0, m1, m2, m3, m4, m5, m6, m7 )
     {
@@ -121,8 +123,12 @@ namespace MathSIMD
     //
     // Constructor
     //
-    inline Mat4_3DNow::Mat4_3DNow( float m00, float m01, float m02, float m03, float m10, float m11, float m12, float m13, 
-        float m20, float m21, float m22, float m23, float m30, float m31, float m32, float m33 ):
+    inline Mat4_3DNow::Mat4_3DNow( 
+                                  float m00, float m01, float m02, float m03, 
+                                  float m10, float m11, float m12, float m13,
+                                  float m20, float m21, float m22, float m23,
+                                  float m30, float m31, float m32, float m33
+                                  ):
 
         Mat4( m00, m10, m20, m30, 
             m01, m11, m21, m31, 
@@ -206,16 +212,7 @@ namespace MathSIMD
     //
     inline void Mat4_3DNow::Transpose()
     {
-        using namespace std;
-
-        // Возможно создание множества переменных Temp. Заменить на хэнд-код!
-
-        swap( m[ 0 ].y, m[ 1 ].x );
-        swap( m[ 0 ].z, m[ 2 ].x );
-        swap( m[ 0 ].w, m[ 3 ].x );
-        swap( m[ 1 ].z, m[ 2 ].y );
-        swap( m[ 1 ].w, m[ 3 ].y );
-        swap( m[ 2 ].w, m[ 3 ].z );
+        _MM_TRANSPOSE4_PS( m1, m2, m3, m4 ); // Не нашёл в 3DNow! команд для транспонирования, используем SSЕ. 
     }
 
     //
@@ -223,10 +220,11 @@ namespace MathSIMD
     //
     inline Mat4_3DNow Mat4_3DNow::GetTransposed() const
     {
-        Mat4_3DNow k = *this;
+        Mat4_3DNow n = *this;
 
-        k.Transpose();
-        return k;
+        n.Transpose();
+
+        return n;
     }
 
     //

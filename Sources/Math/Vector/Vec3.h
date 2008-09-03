@@ -72,8 +72,8 @@ namespace Math
         Vec3<T>             GetTruncated( const T& Length ) const;
 
         TEMPLATE_Y Vec2<Y>  ToVec2() const;
-        Mat3                ToMat3() const; // Cì. Postpone.h
-        Mat4                ToMat4() const; // Cì. Postpone.h
+        Mat3                ToMat3() const; // Cì. Postponed.h
+        Mat4                ToMat4() const; // Cì. Postponed.h
 
         //
         // Swizzling
@@ -121,9 +121,9 @@ namespace Math
 
         Vec3<T>&            operator *= (const T& s);   
         Vec3<T>&            operator *= (const Vec3<T>& v); 
-        Vec3<T>&            operator *= (const Mat3& m); // Ñì. Postpone.h  
-        Vec3<T>&            operator *= (const Mat4& m); // Ñì. Postpone.h  
-        Vec3<T>&            operator *= (const Quat4<T>& q); // Ñì. Postpone.h
+        Vec3<T>&            operator *= (const Mat3& m); // Cì. Postponed.h  
+        Vec3<T>&            operator *= (const Mat4& m); // Cì. Postponed.h  
+        Vec3<T>&            operator *= (const Quat4<T>& q); // Cì. Postponed.h
         Vec3<T>&            operator /= (const T& s);
         Vec3<T>&            operator /= (const Vec3<T>& v);
         Vec3<T>&            operator += (const T& s);

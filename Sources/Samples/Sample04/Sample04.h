@@ -51,7 +51,8 @@ namespace Demo
         //
 
     __M(
-        m_Program,          Ptr<GL::CCgShadingProgram>,
+        m_CgWVP,            Ptr<GL::CCgShadingProgram>,
+        m_UWorldViewProj,   Ptr<GL::IUniform>,
         m_UColor,           Ptr<GL::IUniform>,
 
         m_VSPos3,           Ptr<GL::CVertexStructure>,

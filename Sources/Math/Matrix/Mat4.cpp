@@ -21,7 +21,7 @@ License along with this library. If not, see http://www.gnu.org/licenses
 // Файл: /Math/Matrix/Mat4.cpp
 //
 
-#include "Precompiled.h"
+#include "Pch.h"
 #pragma hdrstop
 
 namespace Math
@@ -52,25 +52,25 @@ namespace Math
                float _30, float _31, float _32, float _33 
                )
     {
-        m[ 0 ][ 0 ] = _00;
-        m[ 0 ][ 1 ] = _01;
-        m[ 0 ][ 2 ] = _02;
-        m[ 0 ][ 3 ] = _03;
+        m[ 0 ].x = _00;
+        m[ 0 ].y = _01;
+        m[ 0 ].z = _02;
+        m[ 0 ].w = _03;
 
-        m[ 1 ][ 0 ] = _10;
-        m[ 1 ][ 1 ] = _11;
-        m[ 1 ][ 2 ] = _12;
-        m[ 1 ][ 3 ] = _13;
+        m[ 1 ].x = _10;
+        m[ 1 ].y = _11;
+        m[ 1 ].z = _12;
+        m[ 1 ].w = _13;
 
-        m[ 2 ][ 0 ] = _20;
-        m[ 2 ][ 1 ] = _21;
-        m[ 2 ][ 2 ] = _22;
-        m[ 2 ][ 3 ] = _23;
+        m[ 2 ].x = _20;
+        m[ 2 ].y = _21;
+        m[ 2 ].z = _22;
+        m[ 2 ].w = _23;
 
-        m[ 3 ][ 0 ] = _30;
-        m[ 3 ][ 1 ] = _31;
-        m[ 3 ][ 2 ] = _32;
-        m[ 3 ][ 3 ] = _33;
+        m[ 3 ].x = _30;
+        m[ 3 ].y = _31;
+        m[ 3 ].z = _32;
+        m[ 3 ].w = _33;
     }
 
     //
@@ -173,9 +173,9 @@ namespace Math
     }
 
     //
-    // Inverse
+    // Invert
     //
-    bool Mat4::Inverse()
+    bool Mat4::Invert()
     {    
         float *m = this->ToPtr();
 
@@ -268,7 +268,7 @@ namespace Math
     {
         Mat4 n( *this );
 
-        n.Inverse();
+        n.Invert();
 
         return n;
     }
@@ -498,6 +498,53 @@ namespace Math
     }
 
     //
+    // RotationAroundAxis
+    //
+    void Mat4::RotationAroundAxis( const Vec3<float>& Axis, float Angle )
+    {
+	    // x^2 + (1 - x^2) * cos(a) => x^2 + cos(a) - x^2 * cos(a) => 
+        // x^2 * (1 - cos(a)) + cos(a)
+
+    #ifdef _DEBUG
+	    Axis.Assume();
+    #endif
+
+        float Rad = Radians( Angle );
+
+        float s = Sin( Rad );
+        float c = Cos( Rad );
+	    float d = 1.0f - c;
+
+	    float xs = Axis.x * s;
+	    float ys = Axis.y * s;
+	    float zs = Axis.z * s;
+
+	    float xyd = Axis.x * Axis.y * d;
+	    float xzd = Axis.x * Axis.z * d;
+	    float yzd = Axis.y * Axis.z * d;
+
+	    m[ 0 ].x = Axis.x * Axis.x * d + c; 
+	    m[ 0 ].y = xyd + zs;
+	    m[ 0 ].z = xzd - ys;
+        m[ 0 ].w = 0.0f;
+
+	    m[ 1 ].x = xyd - zs;
+	    m[ 1 ].y = Axis.y * Axis.y * d + c; 
+	    m[ 1 ].z = yzd + xs;
+        m[ 1 ].w = 0.0f;
+
+	    m[ 2 ].x = xzd + ys;
+	    m[ 2 ].y = yzd - xs;
+	    m[ 2 ].z = Axis.z * Axis.z * d + c;
+        m[ 2 ].w = 0.0f;
+
+        m[ 3 ].x = 0.0f;
+	    m[ 3 ].y = 0.0f;
+	    m[ 3 ].z = 0.0f;
+	    m[ 3 ].w = 1.0f;
+    }
+
+    //
     // Scaling
     //
     void Mat4::Scaling( float x, float y, float z )
@@ -602,12 +649,15 @@ namespace Math
     }
 
     //
-    // Ortho
+    // OrthoLH
     //
-    bool Mat4::Ortho( float Left, float Right, float Bottom, float Top, float ZNear, float ZFar )
+    bool Mat4::OrthoLH( float Left, float Right, float Bottom, float Top, float Near, float Far )
     {
-        if ((Right - Left < EPSILON) || (Top - Bottom < EPSILON) || (ZFar - ZNear < EPSILON))
+        if ((Right - Left < EPSILON) || (Top - Bottom < EPSILON) || (Far - Near < EPSILON))
+        {
+            Identity();
             return false;
+        }
 
         m[ 0 ][ 0 ] = 2.0f / (Right - Left);
         m[ 0 ][ 1 ] = 0.0f;
@@ -621,172 +671,340 @@ namespace Math
 
         m[ 2 ][ 0 ] = 0.0f; 
         m[ 2 ][ 1 ] = 0.0f;
-        m[ 2 ][ 2 ] = -2.0f / (ZFar - ZNear);
+        m[ 2 ][ 2 ] = 1.0f / (Far - Near); // LHS
         m[ 2 ][ 3 ] = 0.0f;
 
-        m[ 3 ][ 0 ] = -(Right + Left) / (Right - Left);
-        m[ 3 ][ 1 ] = -(Top + Bottom) / (Top - Bottom);
-        m[ 3 ][ 2 ] = -(ZFar + ZNear) / (ZFar - ZNear);
+        m[ 3 ][ 0 ] = (Left + Right) / (Left - Right);
+        m[ 3 ][ 1 ] = (Top + Bottom) / (Bottom - Top);
+        m[ 3 ][ 2 ] = Near / (Near - Far);
         m[ 3 ][ 3 ] = 1.0f;
         
         return true;
     }
 
     //
-    // Ortho2D
+    // OrthoRH
     //
-    bool Mat4::Ortho2D( float Left, float Right, float Bottom, float Top )
+    bool Mat4::OrthoRH( float Left, float Right, float Bottom, float Top, float Near, float Far )
     {
-        return Ortho( Left, Right, Bottom, Top, -1.0f, 1.0f );
-    }
-
-    //
-    // PerspectiveRHS
-    //
-    bool Mat4::PerspectiveRHS( float Fovy, float Aspect, float ZNear, float ZFar )
-    {
-        //     [ 2n/(r-l),        0,  (r+l)/(r-l),          0 ]
-        // M = [        0, 2n/(t-b),  (t+b)/(t-b),          0 ]
-        //     [        0,        0, -(f+n)/(f-n), -2fn/(f-n) ]
-        //     [        0,        0,           -1,          0 ]
-
-        if (ZFar - ZNear < EPSILON)
+        if ((Right - Left < EPSILON) || (Top - Bottom < EPSILON) || (Far - Near < EPSILON))
+        {
+            Identity();
             return false;
-    
-        float Top = ZNear * Tan( Fovy * PI / 360.0f );
-        float Bottom = -Top;
-        float Left = Bottom * Aspect;
-        float Right = Top * Aspect;
+        }
 
-        if ((Right - Left < EPSILON) || (Top - Bottom < EPSILON))
-            return false;
-
-        m[ 0 ][ 0 ] = 2.0f * ZNear / (Right - Left);
+        m[ 0 ][ 0 ] = 2.0f / (Right - Left);
         m[ 0 ][ 1 ] = 0.0f;
         m[ 0 ][ 2 ] = 0.0f;
         m[ 0 ][ 3 ] = 0.0f;
 
         m[ 1 ][ 0 ] = 0.0f;
-        m[ 1 ][ 1 ] = 2.0f * ZNear / (Top - Bottom);
+        m[ 1 ][ 1 ] = 2.0f / (Top - Bottom);
         m[ 1 ][ 2 ] = 0.0f;
         m[ 1 ][ 3 ] = 0.0f;
 
-        m[ 2 ][ 0 ] = (Right + Left) / (Right - Left);
-        m[ 2 ][ 1 ] = (Top + Bottom) / (Top - Bottom);
-        m[ 2 ][ 2 ] = -(ZFar + ZNear) / (ZFar - ZNear);
+        m[ 2 ][ 0 ] = 0.0f; 
+        m[ 2 ][ 1 ] = 0.0f;
+        m[ 2 ][ 2 ] = 1.0f / (Near - Far); // RHS
+        m[ 2 ][ 3 ] = 0.0f;
+
+        m[ 3 ][ 0 ] = (Left + Right) / (Left - Right);
+        m[ 3 ][ 1 ] = (Top + Bottom) / (Bottom - Top);
+        m[ 3 ][ 2 ] = Near / (Near - Far);
+        m[ 3 ][ 3 ] = 1.0f;
+        
+        return true;
+    }
+
+    //
+    // Ortho2DLH
+    //
+    bool Mat4::Ortho2DLH( float Left, float Right, float Bottom, float Top )
+    {
+        return OrthoLH( Left, Right, Bottom, Top, -1.0f, 1.0f );
+    }
+
+    //
+    // Ortho2DRH
+    //
+    bool Mat4::Ortho2DRH( float Left, float Right, float Bottom, float Top )
+    {
+        return OrthoRH( Left, Right, Bottom, Top, -1.0f, 1.0f );
+    }
+
+    //
+    // PerspectiveLH
+    //
+    bool Mat4::PerspectiveLH( float FOVy, float Aspect, float Near, float Far )
+    {
+        float Rad = Radians( FOVy / 2.0f );
+
+        if ((Aspect < EPSILON) || (Sin( Rad ) < EPSILON) || (Far - Near < EPSILON))
+        {
+            Identity();
+            return false;
+        }
+
+        float c = Cot( Rad );
+
+        m[ 0 ][ 0 ] = c / Aspect;
+        m[ 0 ][ 1 ] = 0.0f;
+        m[ 0 ][ 2 ] = 0.0f;
+        m[ 0 ][ 3 ] = 0.0f;
+
+        m[ 1 ][ 0 ] = 0.0f;
+        m[ 1 ][ 1 ] = c;
+        m[ 1 ][ 2 ] = 0.0f;
+        m[ 1 ][ 3 ] = 0.0f;
+
+        m[ 2 ][ 0 ] = 0.0f;
+        m[ 2 ][ 1 ] = 0.0f;
+        m[ 2 ][ 2 ] = Far / (Far - Near);
+        m[ 2 ][ 3 ] = 1.0f;
+
+        m[ 3 ][ 0 ] = 0.0f; 
+        m[ 3 ][ 1 ] = 0.0f;
+        m[ 3 ][ 2 ] = -Near * Far / (Far - Near);
+        m[ 3 ][ 3 ] = 0.0f;
+
+        return true;
+    }
+
+    //
+    // PerspectiveRH
+    //
+    bool Mat4::PerspectiveRH( float FOVy, float Aspect, float Near, float Far )
+    {
+        float Rad = Radians( FOVy / 2.0f );
+
+        if ((Aspect < EPSILON) || (Sin( Rad ) < EPSILON) || (Far - Near < EPSILON))
+        {
+            Identity();
+            return false;
+        }
+
+        float c = Cot( Rad );
+
+        m[ 0 ][ 0 ] = c / Aspect;
+        m[ 0 ][ 1 ] = 0.0f;
+        m[ 0 ][ 2 ] = 0.0f;
+        m[ 0 ][ 3 ] = 0.0f;
+
+        m[ 1 ][ 0 ] = 0.0f;
+        m[ 1 ][ 1 ] = c;
+        m[ 1 ][ 2 ] = 0.0f;
+        m[ 1 ][ 3 ] = 0.0f;
+
+        m[ 2 ][ 0 ] = 0.0f;
+        m[ 2 ][ 1 ] = 0.0f;
+        m[ 2 ][ 2 ] = Far / (Near - Far);           // Также можно переформулировать как -(Far + Near) / (Far - Near)
         m[ 2 ][ 3 ] = -1.0f;
 
         m[ 3 ][ 0 ] = 0.0f; 
         m[ 3 ][ 1 ] = 0.0f;
-        m[ 3 ][ 2 ] = -2.0f * ZFar * ZNear / (ZFar - ZNear);
+        m[ 3 ][ 2 ] = Near * Far / (Near - Far);    // Также можно переформулировать как -2.0f * Near * Far / (Far - Near)
         m[ 3 ][ 3 ] = 0.0f;
 
         return true;
     }
 
     //
-    // InfinitePerspectiveRHS
+    // PerspectiveLH
     //
-    bool Mat4::InfinitePerspectiveRHS( float Fovy, float Aspect, float ZNear, float ZFar )
+    bool Mat4::PerspectiveLH( float Left, float Right, float Bottom, float Top, float Near, float Far )
     {
-        //     [ 2n/(r-l),        0,  (r+l)/(r-l),      0 ]
-        // M = [        0, 2n/(t-b),  (t+b)/(t-b),      0 ]
-        //     [        0,        0,          e-1, n(e-2) ]
-        //     [        0,        0,           -1,      0 ]
-
-        if (ZFar - ZNear < EPSILON)
+        if ((Right - Left < EPSILON) || (Top - Bottom < EPSILON) || (Far - Near < EPSILON))
+        {
+            Identity();
             return false;
+        }
 
-        float Top = ZNear * Tan( Fovy * PI / 360.0f );
-        float Bottom = -Top;
-        float Left = Bottom * Aspect;
-        float Right = Top * Aspect;
-
-        if ((Right - Left < EPSILON) || (Top - Bottom < EPSILON))
-            return false;
-
-        m[ 0 ][ 0 ] = 2.0f * ZNear / (Right - Left);
+        m[ 0 ][ 0 ] = 2.0f * Near / (Right - Left);
         m[ 0 ][ 1 ] = 0.0f;
         m[ 0 ][ 2 ] = 0.0f;
         m[ 0 ][ 3 ] = 0.0f;
 
         m[ 1 ][ 0 ] = 0.0f;
-        m[ 1 ][ 1 ] = 2.0f * ZNear / (Top - Bottom);
+        m[ 1 ][ 1 ] = 2.0f * Near / (Top - Bottom);
         m[ 1 ][ 2 ] = 0.0f;
         m[ 1 ][ 3 ] = 0.0f;
 
-        m[ 2 ][ 0 ] = (Right + Left) / (Right - Left);
-        m[ 2 ][ 1 ] = (Top + Bottom) / (Top - Bottom);
-        m[ 2 ][ 2 ] = EPSILON - 1.0f;
-        m[ 2 ][ 3 ] = -1.0f;               
+        m[ 2 ][ 0 ] = (Left + Right) / (Left - Right);
+        m[ 2 ][ 1 ] = (Top + Bottom) / (Bottom - Top);
+        m[ 2 ][ 2 ] = Far / (Far - Near);         
+        m[ 2 ][ 3 ] = 1.0f;
 
         m[ 3 ][ 0 ] = 0.0f; 
         m[ 3 ][ 1 ] = 0.0f;
-        m[ 3 ][ 2 ] = ZNear * (EPSILON - 2.0f);
+        m[ 3 ][ 2 ] = Near * Far / (Near - Far);  
         m[ 3 ][ 3 ] = 0.0f;
 
         return true;
     }
 
     //
-    // TODO:
+    // PerspectiveRH
     //
-    bool Mat4::PerspectiveLHS( float Fovy, float Aspect, float ZNear, float ZFar )
+    bool Mat4::PerspectiveRH( float Left, float Right, float Bottom, float Top, float Near, float Far )
     {
+        if ((Right - Left < EPSILON) || (Top - Bottom < EPSILON) || (Far - Near < EPSILON))
+        {
+            Identity();
+            return false;
+        }
+
+        m[ 0 ][ 0 ] = 2.0f * Near / (Right - Left);
+        m[ 0 ][ 1 ] = 0.0f;
+        m[ 0 ][ 2 ] = 0.0f;
+        m[ 0 ][ 3 ] = 0.0f;
+
+        m[ 1 ][ 0 ] = 0.0f;
+        m[ 1 ][ 1 ] = 2.0f * Near / (Top - Bottom);
+        m[ 1 ][ 2 ] = 0.0f;
+        m[ 1 ][ 3 ] = 0.0f;
+
+        m[ 2 ][ 0 ] = (Left + Right) / (Right - Left);
+        m[ 2 ][ 1 ] = (Top + Bottom) / (Top - Bottom);
+        m[ 2 ][ 2 ] = Far / (Near - Far);           // Также можно переформулировать как -(Far + Near) / (Far - Near)
+        m[ 2 ][ 3 ] = -1.0f;
+
+        m[ 3 ][ 0 ] = 0.0f; 
+        m[ 3 ][ 1 ] = 0.0f;
+        m[ 3 ][ 2 ] = Near * Far / (Near - Far);    // Также можно переформулировать как -2.0f * Near * Far / (Far - Near)
+        m[ 3 ][ 3 ] = 0.0f;
+
+        return true;
+    }
+
+    //
+    // InfinitePerspectiveLH
+    //
+    bool Mat4::InfinitePerspectiveLH( float FOVy, float Aspect, float Near, float Far )
+    {
+        // TODO
         return false;
     }
 
     //
-    // TODO:
+    // InfinitePerspectiveRH
+    // http://www.gamasutra.com/features/20021011/lengyel_02.htm
     //
-    bool Mat4::InfinitePerspectiveLHS( float Fovy, float Aspect, float ZNear, float ZFar )
+    bool Mat4::InfinitePerspectiveRH( float FOVy, float Aspect, float Near, float Far )
     {
-        return false;
+        if (Far - Near < EPSILON)
+        {
+            Identity();
+            return false;
+        }
+
+        float Top = Near * Tan( FOVy * PI / 360.0f );
+        float Bottom = -Top;
+        float Left = Bottom * Aspect;
+        float Right = Top * Aspect;
+
+        if ((Right - Left < EPSILON) || (Top - Bottom < EPSILON))
+        {
+            Identity();
+            return false;
+        }
+
+        m[ 0 ][ 0 ] = 2.0f * Near / (Right - Left);
+        m[ 0 ][ 1 ] = 0.0f;
+        m[ 0 ][ 2 ] = 0.0f;
+        m[ 0 ][ 3 ] = 0.0f;
+
+        m[ 1 ][ 0 ] = 0.0f;
+        m[ 1 ][ 1 ] = 2.0f * Near / (Top - Bottom);
+        m[ 1 ][ 2 ] = 0.0f;
+        m[ 1 ][ 3 ] = 0.0f;
+
+        m[ 2 ][ 0 ] = (Left + Right) / (Right - Left);
+        m[ 2 ][ 1 ] = (Top + Bottom) / (Top - Bottom);
+        m[ 2 ][ 2 ] = EPSILON - 1.0f;               // Tweaked 
+        m[ 2 ][ 3 ] = -1.0f;               
+
+        m[ 3 ][ 0 ] = 0.0f; 
+        m[ 3 ][ 1 ] = 0.0f;
+        m[ 3 ][ 2 ] = Near * (EPSILON - 2.0f);      // Tweaked 
+        m[ 3 ][ 3 ] = 0.0f;
+
+        return true;
     }
 
     //
-    // LookAt
+    // LookAtLH
     //
-    void Mat4::LookAt( const Vec3<float>& Eye, const Vec3<float>& Dir, const Vec3<float>& Up )
+    bool Mat4::LookAtLH( const Vec3<float>& Eye, const Vec3<float>& At, const Vec3<float>& _Up )
     {
     #ifdef _DEBUG
-        Up.Assume();
+        _Up.Assume();
     #endif
-        Vec3<float> d = Dir.GetNormalized();
-        Vec3<float> s; 
 
-        s = CrossProduct( d, Up );
-	    s.Normalize();
+        Vec3<float> Dir = At - Eye; // LHS
+        Dir.Normalize();
+        Vec3<float> Side = CrossProduct( _Up, Dir );
+	    Side.Normalize();
+        Vec3<float> Up = CrossProduct( Dir, Side );
 
-        Vec3<float> u = CrossProduct( s, d );
+	    m[ 0 ][ 0 ] = Side.x;    
+        m[ 1 ][ 0 ] = Side.y;    
+        m[ 2 ][ 0 ] = Side.z;     
+        m[ 3 ][ 0 ] = -DotProduct( Side, Eye );
 
-	    m[ 0 ].x = s.x;    
-        m[ 1 ].x = s.y;    
-        m[ 2 ].x = s.z;     
-        m[ 3 ].x = m[ 0 ].x * -Eye.x + m[ 1 ].x * -Eye.y + m[ 2 ].x * -Eye.z;  
+	    m[ 0 ][ 1 ] = Up.x;    
+        m[ 1 ][ 1 ] = Up.y;    
+        m[ 2 ][ 1 ] = Up.z;     
+        m[ 3 ][ 1 ] = -DotProduct( Up, Eye );
 
-	    m[ 0 ].y = u.x;    
-        m[ 1 ].y = u.y;    
-        m[ 2 ].y = u.z;     
-        m[ 3 ].y = m[ 0 ].y * -Eye.x + m[ 1 ].y * -Eye.y + m[ 2 ].y * -Eye.z;
+	    m[ 0 ][ 2 ] = Dir.x;  
+        m[ 1 ][ 2 ] = Dir.y;   
+        m[ 2 ][ 2 ] = Dir.z;    
+        m[ 3 ][ 2 ] = -DotProduct( Dir, Eye );
 
-	    m[ 0 ].z = -d.x;  
-        m[ 1 ].z = -d.y;   
-        m[ 2 ].z = -d.z;    
-        m[ 3 ].z = m[ 0 ].z * -Eye.x + m[ 1 ].z * -Eye.y + m[ 2 ].z * -Eye.z;
+	    m[ 0 ][ 3 ] = 0.0f;   
+        m[ 1 ][ 3 ] = 0.0f;   
+        m[ 2 ][ 3 ] = 0.0f;
+        m[ 3 ][ 3 ] = 1.0f;
 
-	    m[ 0 ].w = 0.0f;   
-        m[ 1 ].w = 0.0f;   
-        m[ 2 ].w = 0.0f;
-        m[ 3 ].w = 1.0f;
+        return true;
     }
 
     //
-    // LookAtGL
+    // LookAtRH
     //
-    void Mat4::LookAtGL( const Vec3<float>& Eye, const Vec3<float>& Center, const Vec3<float>& Up )
+    bool Mat4::LookAtRH( const Vec3<float>& Eye, const Vec3<float>& At, const Vec3<float>& _Up )
     {
-        LookAt( Eye, Center - Eye, Up );
+    #ifdef _DEBUG
+        _Up.Assume();
+    #endif
+
+        Vec3<float> Dir = Eye - At; // RHS
+        Dir.Normalize();
+        Vec3<float> Side = CrossProduct( _Up, Dir );
+	    Side.Normalize();
+        Vec3<float> Up = CrossProduct( Dir, Side );
+
+	    m[ 0 ][ 0 ] = Side.x;    
+        m[ 1 ][ 0 ] = Side.y;    
+        m[ 2 ][ 0 ] = Side.z;     
+        m[ 3 ][ 0 ] = -DotProduct( Side, Eye );
+
+	    m[ 0 ][ 1 ] = Up.x;    
+        m[ 1 ][ 1 ] = Up.y;    
+        m[ 2 ][ 1 ] = Up.z;     
+        m[ 3 ][ 1 ] = -DotProduct( Up, Eye );
+
+	    m[ 0 ][ 2 ] = Dir.x;  
+        m[ 1 ][ 2 ] = Dir.y;   
+        m[ 2 ][ 2 ] = Dir.z;    
+        m[ 3 ][ 2 ] = -DotProduct( Dir, Eye );
+
+	    m[ 0 ][ 3 ] = 0.0f;   
+        m[ 1 ][ 3 ] = 0.0f;   
+        m[ 2 ][ 3 ] = 0.0f;
+        m[ 3 ][ 3 ] = 1.0f;
+
+        return true;
     }
 
     //

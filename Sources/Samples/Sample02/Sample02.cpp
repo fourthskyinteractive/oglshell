@@ -16,6 +16,12 @@ namespace Demo
                          ):
         CDemo_GL( Instance, Width, Height, Caption )
     {
+        Vec3<float> Eye( 0.0f, 0.0f, 5.0f );
+        Vec3<float> At( 0.0f, 0.0f, 0.0f );
+        Vec3<float> Up( 0.0f, 1.0f, 0.0f );
+
+        m_View.LookAtRH( Eye, At, Up ); 
+
         //
         // OpenGL objects
         //
@@ -41,11 +47,15 @@ namespace Demo
         glClearColor( 90.0f / 255.0f, 135.0f / 255.0f, 178.0f / 255.0f, 0.0f );
         glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT );
 
-        glLoadIdentity();
-        gluLookAt( 0.0, 0.0, 5.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0 );
+        m_Stack->Select( GLU::CMatrixStack::MAT_PROJECTION );
+        m_Stack->Set( m_Proj );
+        m_Stack->Select( GLU::CMatrixStack::MAT_VIEW );
+        m_Stack->Set( m_View );
+        m_Stack->Select( GLU::CMatrixStack::MAT_WORLD );
+        m_Stack->SetIdentity();
 
         float Time = m_Timer->GetElapsedTime();
-        Angle += Time * 15.0f;
+        Angle += Time * 60.0f;
 
         //
         // Cube 01
@@ -55,17 +65,23 @@ namespace Demo
         m_RenderDevice->SetVertexBuffer( 0, m_VB[ 0 ] );
         m_RenderDevice->SetIndexBuffer( m_IB );
 
-        m_RenderDevice->SetShadingProgram( m_Programs[ 0 ] );
+        m_RenderDevice->SetShadingProgram( m_CgWVP );
 
-        glPushMatrix();
-        glTranslatef( -1.0f, 0.0f, 0.0f );
-        glRotatef( Angle, 1.0f, 0.0f, 0.0f );
-        glRotatef( Angle, 0.0f, 1.0f, 0.0f );
-        glRotatef( Angle, 0.0f, 0.0f, 1.0f );
+        m_Stack->Push();
+        m_Stack->Translate( -1.0f, 0.0f, 0.0f );
+        m_Stack->Rotate( 1.0f, 0.0f, 0.0f, Angle );
+        m_Stack->Rotate( 0.0f, 1.0f, 0.0f, Angle );
+        m_Stack->Rotate( 0.0f, 0.0f, 1.0f, Angle );
+
+        m_UColor->SetFloat4( 1.0f, 1.0f, 0.0f, 1.0f );
+        m_UWorldViewProj->SetFloatMat4( 
+            m_Stack->GetTop( GLU::CMatrixStack::MAT_WORLDVIEW_PROJECTION ), 
+            GL::IUniform::MO_COLUMN_MAJOR 
+            );
 
         m_RenderDevice->DrawElements( GL_TRIANGLES, 0, NUM_CUBE_INDICES );
 
-        glPopMatrix();
+        m_Stack->Pop();
 
         //
         // Cube 02
@@ -75,17 +91,22 @@ namespace Demo
         m_RenderDevice->SetVertexBuffer( 0, m_VB[ 0 ] ); // Первый vertex stream - позиция.
         m_RenderDevice->SetVertexBuffer( 1, m_VB[ 1 ] ); // Второй vertex stream - цвет.
         m_RenderDevice->SetIndexBuffer( m_IB );
-        m_RenderDevice->SetShadingProgram( m_Programs[ 1 ] );
+        m_RenderDevice->SetShadingProgram( m_CgWVPColor );
 
-        glPushMatrix();
-        glTranslatef( 1.0f, 0.0f, 0.0f );
-        glRotatef( -Angle * 2.0f, 1.0f, 0.0f, 0.0f );
-        glRotatef( -Angle * 2.0f, 0.0f, 1.0f, 0.0f );
-        glRotatef( -Angle * 2.0f, 0.0f, 0.0f, 1.0f );
+        m_Stack->Push();
+        m_Stack->Translate( 1.0f, 0.0f, 0.0f );
+        m_Stack->Rotate( 1.0f, 0.0f, 0.0f, -Angle * 2.0f );
+        m_Stack->Rotate( 0.0f, 1.0f, 0.0f, -Angle * 2.0f );
+        m_Stack->Rotate( 0.0f, 0.0f, 1.0f, -Angle * 2.0f );
+
+        m_UWorldViewProj2->SetFloatMat4( 
+            m_Stack->GetTop( GLU::CMatrixStack::MAT_WORLDVIEW_PROJECTION ), 
+            GL::IUniform::MO_COLUMN_MAJOR 
+            );
 
         m_RenderDevice->DrawElements( GL_TRIANGLES, 0, NUM_CUBE_INDICES );
 
-        glPopMatrix();
+        m_Stack->Pop();
 
         m_RenderDevice->SetShadingProgram( NULL );
         m_RenderDevice->SetVertexBuffer( 0, NULL );
@@ -96,20 +117,20 @@ namespace Demo
         // Text
         //
 
-        BeginOrthoView( GL_LOWER_LEFT );
+        m_RenderDevice->SetShadingProgram( m_CgWVP );
+
+        m_UWorldViewProj->SetFloatMat4( m_Ortho, GL::IUniform::MO_COLUMN_MAJOR );
 
         glEnable( GL_BLEND );
         glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
 
-        glColor4f( 0.0f, 1.0f, 1.0f, 0.8f );
+        m_UColor->SetFloat4( 0.0f, 1.0f, 1.0f, 0.8f );
         m_Font->DrawText( 20, m_Height - 20 - 14, "Vendor: " + m_DriverDesc.Vendor );
         m_Font->DrawText( 20, m_Height - 35 - 14, "Renderer: " + m_DriverDesc.Renderer );
-        glColor4f( 1.0f, 1.0f, 1.0f, 0.8f ); 
+        m_UColor->SetFloat4( 1.0f, 1.0f, 1.0f, 0.8f ); 
         m_Font->DrawFormatText( 20, m_Height - 85 - 14, "FPS: %d", m_FrameCounter->GetFramesPerSecond() );
 
         glDisable( GL_BLEND );
-
-        EndOrthoView();
 
         //
         // Frame end
@@ -127,25 +148,28 @@ namespace Demo
     {
         Ptr<GL::CCgShader> VS, FS;
        
-        string SourceStr = LoadStringFromFile( "../MEDIA/Cg/MVP.cg" );
+        string SourceStr = LoadStringFromFile( "../MEDIA/Cg/WVP.cg" );
 
         VS = new GL::CCgVertexShader( CG_SOURCE, SourceStr, CG_PROFILE_ARBVP1, "VS" );
         FS = new GL::CCgFragmentShader( CG_SOURCE, SourceStr, CG_PROFILE_ARBFP1, "FS" );
 
-        m_Programs[ 0 ] = new GL::CCgShadingProgram();
-        m_Programs[ 0 ]->AttachShader( VS );
-        m_Programs[ 0 ]->AttachShader( FS );
-        m_Programs[ 0 ]->Link();
+        m_CgWVP = new GL::CCgShadingProgram();
+        m_CgWVP->AttachShader( VS );
+        m_CgWVP->AttachShader( FS );
+        m_CgWVP->Link();
+        m_CgWVP->GetUniform( "WorldViewProj", &m_UWorldViewProj );
+        m_CgWVP->GetUniform( "Color", &m_UColor );
 
-        SourceStr = LoadStringFromFile( "../MEDIA/Cg/MVPColor.cg" );
+        SourceStr = LoadStringFromFile( "../MEDIA/Cg/WVPColor.cg" );
 
         VS = new GL::CCgVertexShader( CG_SOURCE, SourceStr, CG_PROFILE_ARBVP1, "VS" );
         FS = new GL::CCgFragmentShader( CG_SOURCE, SourceStr, CG_PROFILE_ARBFP1, "FS" );
 
-        m_Programs[ 1 ] = new GL::CCgShadingProgram();
-        m_Programs[ 1 ]->AttachShader( VS );
-        m_Programs[ 1 ]->AttachShader( FS );
-        m_Programs[ 1 ]->Link();
+        m_CgWVPColor = new GL::CCgShadingProgram();
+        m_CgWVPColor->AttachShader( VS );
+        m_CgWVPColor->AttachShader( FS );
+        m_CgWVPColor->Link();
+        m_CgWVPColor->GetUniform( "WorldViewProj", &m_UWorldViewProj2 );
     }
         
     //

@@ -122,7 +122,7 @@ namespace Sys
     // GetPointer
     //
     template <typename T>
-    __forceinline T *IRefCounter<T>::GetPointer() const
+    FORCEINLINE T *IRefCounter<T>::GetPointer() const
     {
     #ifdef _DEBUG
 	    if (!m_Object)

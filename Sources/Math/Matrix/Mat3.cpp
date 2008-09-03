@@ -21,7 +21,7 @@ License along with this library. If not, see http://www.gnu.org/licenses
 // Τΰιλ: /Math/Matrix/Mat3.cpp
 //
 
-#include "Precompiled.h"
+#include "Pch.h"
 #pragma hdrstop
 
 namespace Math
@@ -145,9 +145,9 @@ namespace Math
     }
 
     //
-    // Inverse
+    // Invert
     //
-    bool Mat3::Inverse()
+    bool Mat3::Invert()
     {
         Mat3 k;
 
@@ -190,7 +190,7 @@ namespace Math
     {
         Mat3 n( *this );
 
-        n.Inverse();
+        n.Invert();
 
         return n;
     }

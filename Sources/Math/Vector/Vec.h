@@ -161,7 +161,7 @@ namespace Math
     template <int N, typename T>    
     inline T *Vec<N, T>::ToPtr()
     {
-        return &x;
+        return vec;
     }
 
     //
@@ -170,7 +170,7 @@ namespace Math
     template <int N, typename T>
     inline const T *Vec<N, T>::ToPtr() const
     {
-        return &x;
+        return vec;
     }
 
     //
@@ -197,9 +197,7 @@ namespace Math
     template <int N, typename T>
     inline T& Vec<N, T>::operator [] (const int& n)                 
     {
-    #ifdef MATH_ASSERT_RANGES
-        assert( n >= 0 && n < N );
-    #endif
+        ASSERT_RANGE( n, 0, N );
         return vec[ n ]; 
     }
 
@@ -209,9 +207,7 @@ namespace Math
     template <int N, typename T>
     inline const T& Vec<N, T>::operator [] (const int& n) const
     {
-    #ifdef MATH_ASSERT_RANGES
-        assert( n >= 0 && n < N );
-    #endif
+        ASSERT_RANGE( n, 0, N );
         return vec[ n ]; 
     }
 }

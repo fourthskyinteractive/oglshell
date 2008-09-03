@@ -43,7 +43,7 @@
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
-				RuntimeLibrary="3"
+				RuntimeLibrary="1"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="Precompiled.h"
 				WarningLevel="3"
@@ -253,11 +253,15 @@
 			Name="MEDIA"
 			>
 			<File
-				RelativePath="..\..\..\Demos\MEDIA\Cg\MVPColor.cg"
+				RelativePath="..\..\..\Demos\MEDIA\Cg\Texture.cg"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\Demos\MEDIA\Cg\Texture.cg"
+				RelativePath="..\..\..\Demos\MEDIA\Cg\WVP.cg"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\Demos\MEDIA\Cg\WVPColor.cg"
 				>
 			</File>
 		</Filter>
