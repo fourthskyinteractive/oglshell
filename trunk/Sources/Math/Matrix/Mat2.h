@@ -34,7 +34,7 @@ namespace Math
         float               GetDeterminant() const;
     
         Mat2                GetTransposed() const;
-        bool                Inverse();
+        bool                Invert();
         Mat2                GetInverted() const;
 
         void                Rotation( float Angle );

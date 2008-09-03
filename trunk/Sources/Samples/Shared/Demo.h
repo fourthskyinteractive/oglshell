@@ -85,23 +85,27 @@ namespace Demo
         void                DestroyRender           ();
 
         string              LoadStringFromFile      ( const string& FileName ) const;
-        
-        void                BeginOrthoView          ( GLenum Mode ) const;
-        void                EndOrthoView            () const;
 
         //
         // Class members
         //
         
     __M(
-        m_WSSwapChain,      Ptr<GL::CWindowSwapChain>,
+        m_WSSwapChain,      Ptr<GLW::CWindowSwapChain>,
 
         m_RenderDevice,     Ptr<GL::IRenderDevice>,
 
         m_Extensions,       Ptr<const GL::CExtensionRegistry>,
         m_DriverDesc,       GL::CDriver::TDesc,
 
-        m_Font,             Ptr<GL::CFont>
+        m_Font,             Ptr<GLU::CBitmapFont>,
+        m_Stack,            Ptr<GLU::CMatrixStack>,
+
+        m_World,            Mat4,
+        m_View,             Mat4, 
+        m_Proj,             Mat4, 
+        m_Ortho,            Mat4,
+        m_Identity,         Mat4,
         );
     };
 }

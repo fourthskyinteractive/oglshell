@@ -43,9 +43,9 @@
 				PreprocessorDefinitions="WIN32;_DEBUG;_LIB"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
-				RuntimeLibrary="3"
+				RuntimeLibrary="1"
 				UsePrecompiledHeader="2"
-				PrecompiledHeaderThrough="Precompiled.h"
+				PrecompiledHeaderThrough="Pch.h"
 				PrecompiledHeaderFile="$(IntDir)\$(TargetName).pch"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="true"
@@ -107,7 +107,7 @@
 				PreprocessorDefinitions="WIN32;NDEBUG;_LIB"
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="2"
-				PrecompiledHeaderThrough="Precompiled.h"
+				PrecompiledHeaderThrough="Pch.h"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="true"
 				DebugInformationFormat="3"
@@ -252,15 +252,23 @@
 			Name="Plane"
 			>
 			<File
-				RelativePath=".\Plane\DenormPlane.h"
-				>
-			</File>
-			<File
 				RelativePath=".\Plane\Plane.h"
 				>
 			</File>
 			<File
 				RelativePath=".\Plane\Plane_SSE.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Plane\PlaneEx.h"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="Utils"
+			>
+			<File
+				RelativePath=".\Utils\Project.h"
 				>
 			</File>
 		</Filter>
@@ -273,11 +281,7 @@
 			>
 		</File>
 		<File
-			RelativePath=".\Postponed.h"
-			>
-		</File>
-		<File
-			RelativePath=".\Precompiled.cpp"
+			RelativePath=".\Pch.cpp"
 			>
 			<FileConfiguration
 				Name="Debug|Win32"
@@ -297,15 +301,11 @@
 			</FileConfiguration>
 		</File>
 		<File
-			RelativePath=".\Precompiled.h"
+			RelativePath=".\Pch.h"
 			>
 		</File>
 		<File
-			RelativePath=".\UnitTest.cpp"
-			>
-		</File>
-		<File
-			RelativePath=".\UnitTest.h"
+			RelativePath=".\Postponed.h"
 			>
 		</File>
 	</Files>

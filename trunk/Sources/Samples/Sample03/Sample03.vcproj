@@ -43,7 +43,7 @@
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
-				RuntimeLibrary="3"
+				RuntimeLibrary="1"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="Precompiled.h"
 				WarningLevel="3"
@@ -261,7 +261,7 @@
 			Name="MEDIA"
 			>
 			<File
-				RelativePath="..\..\..\Demos\MEDIA\Cg\MVPUniformColor.cg"
+				RelativePath="..\..\..\Demos\MEDIA\Cg\WVPUniformColor.cg"
 				>
 			</File>
 		</Filter>

@@ -83,7 +83,7 @@ namespace Math
 
         Vec4<T>&            operator *= (const T& s);   
         Vec4<T>&            operator *= (const Vec4<T>& v); 
-        Vec4<T>&            operator *= (const Mat4& m); // Ñì. Postpone.h
+        Vec4<T>&            operator *= (const Mat4& m); // Cì. Postponed.h
         Vec4<T>&            operator /= (const T& s);
         Vec4<T>&            operator /= (const Vec4<T>& v); 
         Vec4<T>&            operator += (const T& s);

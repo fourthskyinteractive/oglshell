@@ -104,7 +104,9 @@ namespace MathSIMD
     //
     // Constructor
     //
-    inline Mat4_SSE::Mat4_SSE( const __m128& m1, const __m128& m2, const __m128& m3, const __m128& m4 ):
+    inline Mat4_SSE::Mat4_SSE( 
+                              const __m128& m1, const __m128& m2, const __m128& m3, const __m128& m4 
+                              ):
         Mat4( m1, m2, m3, m4 )
     {                                
     }
@@ -120,9 +122,12 @@ namespace MathSIMD
     //
     // Constructor
     //
-    inline Mat4_SSE::Mat4_SSE( float m00, float m01, float m02, float m03, float m10, float m11, float m12, float m13, 
-        float m20, float m21, float m22, float m23, float m30, float m31, float m32, float m33 ):
-    
+    inline Mat4_SSE::Mat4_SSE( 
+                              float m00, float m01, float m02, float m03, 
+                              float m10, float m11, float m12, float m13,
+                              float m20, float m21, float m22, float m23,
+                              float m30, float m31, float m32, float m33 
+                              ):
         Mat4( m00, m01, m02, m03, 
             m10, m11, m12, m13, 
             m20, m21, m22, m23,
@@ -240,10 +245,11 @@ namespace MathSIMD
     //
     inline Mat4_SSE Mat4_SSE::GetTransposed() const
     {
-        Mat4_SSE k = *this;
+        Mat4_SSE n = *this;
 
-        k.Transpose();
-        return k;
+        n.Transpose();
+
+        return n;
     }               
 
     //

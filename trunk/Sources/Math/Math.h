@@ -43,11 +43,13 @@ License along with this library. If not, see http://www.gnu.org/licenses
 
 namespace Math
 {
-    #ifdef _DEBUG
-    #define MATH_ASSERT_RANGES
-    #endif
-
     #define TEMPLATE_Y template <typename Y>
+
+    #ifdef _DEBUG
+        #define ASSERT_RANGE( x, Min, Max ) assert( (x >= Min) && (x < Max) );
+    #else
+        #define ASSERT_RANGE( x, Min, Max )
+    #endif
 
     const float PI = static_cast<float>( 3.14159265358979323846 );
     const float PI2 = 2.0f * PI;
@@ -127,6 +129,17 @@ namespace Math
     inline T CosH( const T& s )
     {
         return static_cast<T>( cosh( static_cast<double>( s ) ) );
+    }
+
+    //
+    // Cot
+    //
+    template <typename T> 
+    inline T Cot( const T& s )
+    {
+        double d = static_cast<double>( s );
+
+        return static_cast<T>( cos( d ) / sin( d ) );
     }
 
     //
@@ -229,7 +242,7 @@ namespace Math
     }
 
     //
-    //
+    // SqRt
     //
     template <typename T> 
     inline T SqRt( const T& s )

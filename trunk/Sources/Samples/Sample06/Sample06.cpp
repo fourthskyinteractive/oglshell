@@ -16,6 +16,12 @@ namespace Demo
                          ):
         CDemo_GL( Instance, Width, Height, Caption )
     {
+        Vec3<float> Eye( 0.0f, 0.0f, 3.0f );
+        Vec3<float> At( 0.0f, 0.0f, 0.0f );
+        Vec3<float> Up( 0.0f, 1.0f, 0.0f );
+
+        m_View.LookAtRH( Eye, At, Up );
+
         //
         // OpenGL objects
         //
@@ -50,12 +56,12 @@ namespace Demo
         glClearColor( 90.0f / 255.0f, 135.0f / 255.0f, 178.0f / 255.0f, 0.0f );
         glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT );
 
-        glMatrixMode( GL_PROJECTION );
-        glLoadIdentity();
-        gluPerspective( 60.0, (double)m_Width / (double)m_Height, 1.0, 10.0 );
-        glMatrixMode( GL_MODELVIEW );
-        glLoadIdentity();
-        gluLookAt( 0.0, 0.0, 3.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0 );
+        m_Stack->Select( GLU::CMatrixStack::MAT_PROJECTION );
+        m_Stack->Set( m_Proj );
+        m_Stack->Select( GLU::CMatrixStack::MAT_VIEW );
+        m_Stack->Set( m_View );
+        m_Stack->Select( GLU::CMatrixStack::MAT_WORLD );
+        m_Stack->SetIdentity();
 
         //
         // Quad
@@ -64,9 +70,9 @@ namespace Demo
         glDisable( GL_CULL_FACE );
 
         m_RenderDevice->SetVertexStructure( m_VSPos3TexCoord2 );
-        m_RenderDevice->SetVertexBuffer( 0, m_VB[ 1 ] ); // Позиция вершины + текстурные координаты.
+        m_RenderDevice->SetVertexBuffer( 0, m_VB[ 1 ] );
         m_RenderDevice->SetIndexBuffer( m_IB[ 1 ] );
-        m_RenderDevice->SetShadingProgram( m_Programs[ 1 ] );
+        m_RenderDevice->SetShadingProgram( m_CgTexture );
 
         const Vec2<float> Offsets[ MAX_MRT ] =
         {
@@ -81,12 +87,17 @@ namespace Demo
             m_UTexture->SetSampler( m_Textures[ i ] );
             m_UTexture->EnableSampler();
 
-            glPushMatrix();
-            glTranslatef( Offsets[ i ].x, Offsets[ i ].y, 0.0f );
+            m_Stack->Push();
+            m_Stack->Translate( Offsets[ i ].x, Offsets[ i ].y, 0.0f );
 
-            m_RenderDevice->DrawElements( GL_TRIANGLE_STRIP, 0, 4 );
+            m_UWorldViewProj3->SetFloatMat4( 
+                m_Stack->GetTop( GLU::CMatrixStack::MAT_WORLDVIEW_PROJECTION ), 
+                GL::IUniform::MO_COLUMN_MAJOR 
+            );
 
-            glPopMatrix();
+            m_RenderDevice->DrawElements( GL_TRIANGLE_STRIP, 0, 4 ); // Quad
+
+            m_Stack->Pop();
 
             m_UTexture->DisableSampler();
         }
@@ -101,21 +112,20 @@ namespace Demo
         // Text
         //
 
-        BeginOrthoView( GL_LOWER_LEFT );
+        m_RenderDevice->SetShadingProgram( m_CgWVP );
+        m_UWorldViewProj->SetFloatMat4( m_Ortho, GL::IUniform::MO_COLUMN_MAJOR );
 
         glEnable( GL_BLEND );
         glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
 
-        glColor4f( 0.0f, 1.0f, 1.0f, 0.8f );
+        m_UColor->SetFloat4( 0.0f, 1.0f, 1.0f, 0.8f );
         m_Font->DrawText( 20, m_Height - 20 - 14, "Vendor: " + m_DriverDesc.Vendor );
         m_Font->DrawText( 20, m_Height - 35 - 14, "Renderer: " + m_DriverDesc.Renderer );
-        glColor4f( 1.0f, 1.0f, 1.0f, 0.8f ); 
+        m_UColor->SetFloat4( 1.0f, 1.0f, 1.0f, 0.8f ); 
         m_Font->DrawFormatText( 20, m_Height - 85 - 14, "FPS: %d", m_FrameCounter->GetFramesPerSecond() );
         m_Font->DrawFormatText( 20, m_Height - 115 - 14, "Using render target: %s", m_FBO ? "Framebuffer Object" : "P-Buffer" );
 
         glDisable( GL_BLEND );
-
-        EndOrthoView();
 
         //
         // Frame end
@@ -143,28 +153,39 @@ namespace Demo
         glClearColor( 1.0f, 1.0f, 1.0f, 1.0f );
         glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
-        glMatrixMode( GL_PROJECTION );
-        glLoadIdentity();
-        gluPerspective( 60.0, (double)m_FrameBuffer->GetFrameWidth() / (double)m_FrameBuffer->GetFrameHeight(), 1.0, 10.0 );
-        glMatrixMode( GL_MODELVIEW );
-        glLoadIdentity();
-        gluLookAt( 0.0, 0.0, 2.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0 );
-
         m_RenderDevice->SetVertexStructure( m_VSPos3 );
         m_RenderDevice->SetVertexBuffer( 0, m_VB[ 0 ] );
         m_RenderDevice->SetIndexBuffer( m_IB[ 0 ] );
+        m_RenderDevice->SetShadingProgram( m_CgMRT );
 
-        m_RenderDevice->SetShadingProgram( m_Programs[ 0 ] );
+        Mat4 View;
+        View.LookAtRH( 
+            Vec3<float>( 0.0f, 0.0f, 2.0f ),
+            Vec3<float>( 0.0f, 0.0f, 0.0f ),
+            Vec3<float>( 0.0f, 1.0f, 0.0f )
+            );
 
-        glPushMatrix();
-        glRotatef( Angle, 1.0f, 0.0f, 0.0f );
-        glRotatef( Angle, 0.0f, 1.0f, 0.0f );
-        glRotatef( Angle, 0.0f, 0.0f, 1.0f );
+        m_Stack->Select( GLU::CMatrixStack::MAT_PROJECTION );
+        m_Stack->Set( m_Proj );
+        m_Stack->Select( GLU::CMatrixStack::MAT_VIEW );
+        m_Stack->Set( View );
+        m_Stack->Select( GLU::CMatrixStack::MAT_WORLD );
+        m_Stack->SetIdentity();
+
+        m_Stack->Rotate( 1.0f, 0.0f, 0.0f, Angle );
+        m_Stack->Rotate( 0.0f, 1.0f, 0.0f, Angle );
+        m_Stack->Rotate( 0.0f, 0.0f, 1.0f, Angle );
+
+        m_UWorldViewProj2->SetFloatMat4( 
+            m_Stack->GetTop( GLU::CMatrixStack::MAT_WORLDVIEW_PROJECTION ), 
+            GL::IUniform::MO_COLUMN_MAJOR 
+            );
 
         m_RenderDevice->DrawElements( GL_TRIANGLES, 0, NUM_CUBE_INDICES );
 
-        glPopMatrix();
-
+        m_RenderDevice->SetVertexStructure( NULL );
+        m_RenderDevice->SetVertexBuffer( 0, NULL );
+        m_RenderDevice->SetIndexBuffer( NULL );
         m_RenderDevice->SetShadingProgram( NULL );
 
         // После того, как закончен вывод в текстуру, необходимо вызвать метод ::Present() 
@@ -193,7 +214,6 @@ namespace Demo
         {
             Ptr<GL::CRenderBuffer> Depth = new GL::CRenderBuffer( GL_DEPTH_COMPONENT24, 0, FB_WIDTH, FB_HEIGHT );
             Ptr<GL::CFrameBufferObject> FrameBuffer = new GL::CFrameBufferObject( GL_FRAMEBUFFER_EXT, FB_WIDTH, FB_HEIGHT );
-            
             for (int i = 0; i < MAX_MRT; ++i)
                 FrameBuffer->SetTexture2D( GL_COLOR_ATTACHMENT0_EXT + i, 0, m_Textures[ i ] );
             FrameBuffer->SetRenderBuffer( GL_DEPTH_ATTACHMENT_EXT, Depth );
@@ -208,7 +228,6 @@ namespace Demo
             {
                 Ptr<GL::CFrameBuffer> FrameBuffer = new GL::CFrameBuffer( GL_RGBA8, GL_DEPTH_COMPONENT24, 0, 
                     MAX_MRT, GL::IFrameBuffer::LT_SINGLE_BUFFER, FB_WIDTH, FB_HEIGHT );
-
                 for (int i = 0; i < MAX_MRT; ++i)
                     FrameBuffer->SetTexture2D( GL_AUX0 + i, 0, m_Textures[ i ] );
                 FrameBuffer->CheckStatus();
@@ -222,7 +241,6 @@ namespace Demo
 
                 Ptr<GL::CRenderBuffer> Depth = new GL::CRenderBuffer( GL_DEPTH_COMPONENT24, 0, FB_WIDTH, FB_HEIGHT );
                 Ptr<GL::CFrameBufferObject> FrameBuffer = new GL::CFrameBufferObject( GL_FRAMEBUFFER_EXT, FB_WIDTH, FB_HEIGHT );
-            
                 for (int i = 0; i < MAX_MRT; ++i)
                     FrameBuffer->SetTexture2D( GL_COLOR_ATTACHMENT0_EXT + i, 0, m_Textures[ i ] );
                 FrameBuffer->SetRenderBuffer( GL_DEPTH_ATTACHMENT_EXT, Depth );
@@ -240,27 +258,41 @@ namespace Demo
     void CSample06::CreateShaders()
     {
         Ptr<GL::CCgShader> VS, FS;
-       
-        string SourceStr = LoadStringFromFile( "../MEDIA/Cg/MRT.cg" );
+
+        string SourceStr = LoadStringFromFile( "../MEDIA/Cg/WVP.cg" );
 
         VS = new GL::CCgVertexShader( CG_SOURCE, SourceStr, CG_PROFILE_ARBVP1, "VS" );
         FS = new GL::CCgFragmentShader( CG_SOURCE, SourceStr, CG_PROFILE_ARBFP1, "FS" );
 
-        m_Programs[ 0 ] = new GL::CCgShadingProgram();
-        m_Programs[ 0 ]->AttachShader( VS );
-        m_Programs[ 0 ]->AttachShader( FS );
-        m_Programs[ 0 ]->Link();
+        m_CgWVP = new GL::CCgShadingProgram();
+        m_CgWVP->AttachShader( VS );
+        m_CgWVP->AttachShader( FS );
+        m_CgWVP->Link();
+        m_CgWVP->GetUniform( "Color", &m_UColor );
+        m_CgWVP->GetUniform( "WorldViewProj", &m_UWorldViewProj );
+
+        SourceStr = LoadStringFromFile( "../MEDIA/Cg/MRT.cg" );
+
+        VS = new GL::CCgVertexShader( CG_SOURCE, SourceStr, "VS" );
+        FS = new GL::CCgFragmentShader( CG_SOURCE, SourceStr, "FS" );
+
+        m_CgMRT = new GL::CCgShadingProgram();
+        m_CgMRT->AttachShader( VS );
+        m_CgMRT->AttachShader( FS );
+        m_CgMRT->Link();
+        m_CgMRT->GetUniform( "WorldViewProj", &m_UWorldViewProj2 );
 
         SourceStr = LoadStringFromFile( "../MEDIA/Cg/Texture.cg" );
 
         VS = new GL::CCgVertexShader( CG_SOURCE, SourceStr, CG_PROFILE_ARBVP1, "VS" );
         FS = new GL::CCgFragmentShader( CG_SOURCE, SourceStr, CG_PROFILE_ARBFP1, "FS" );
 
-        m_Programs[ 1 ] = new GL::CCgShadingProgram();
-        m_Programs[ 1 ]->AttachShader( VS );
-        m_Programs[ 1 ]->AttachShader( FS );
-        m_Programs[ 1 ]->Link();
-        m_Programs[ 1 ]->GetSamplerUniform( "Tex0", &m_UTexture );
+        m_CgTexture = new GL::CCgShadingProgram();
+        m_CgTexture->AttachShader( VS );
+        m_CgTexture->AttachShader( FS );
+        m_CgTexture->Link();
+        m_CgTexture->GetUniform( "WorldViewProj", &m_UWorldViewProj3 );
+        m_CgTexture->GetSamplerUniform( "Tex0", &m_UTexture );
     }
         
     //

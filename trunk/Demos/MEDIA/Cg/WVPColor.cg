@@ -1,15 +1,17 @@
 //
-// File: /Demos/MEDIA/Cg/MVP.cg
+// File: /Demos/MEDIA/Cg/WVPColor.cg
 //
 
 struct VS_INPUT
 {                                           
     float4          Position        : ATTR0;
+    float4          Color           : ATTR1;
 };
 
 struct VS_OUTPUT
 {
     float4          Position        : POSITION;
+    float4          Color;
 };
 
 //
@@ -17,12 +19,13 @@ struct VS_OUTPUT
 //
 VS_OUTPUT VS(
              VS_INPUT In,
-             uniform float4x4 ModelViewProj : state.matrix.mvp
+             uniform float4x4 WorldViewProj
              )
 {
     VS_OUTPUT Out;
     
-    Out.Position = mul( ModelViewProj, In.Position );
+    Out.Position = mul( WorldViewProj, In.Position );
+    Out.Color = In.Color;
 
     return Out;
 }
@@ -34,5 +37,5 @@ float4 FS(
           VS_OUTPUT In
           ) : COLOR
 {
-    return float4( 1.0, 1.0, 0.0, 1.0 );
+    return In.Color;
 }

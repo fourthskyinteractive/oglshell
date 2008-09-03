@@ -21,7 +21,7 @@ License along with this library. If not, see http://www.gnu.org/licenses
 // Τΰιλ: /Math/Matrix/Mat2.cpp
 //
 
-#include "Precompiled.h"
+#include "Pch.h"
 #pragma hdrstop
 
 namespace Math
@@ -111,9 +111,9 @@ namespace Math
     }
 
     //
-    // Inverse
+    // Invert
     //
-    bool Mat2::Inverse()
+    bool Mat2::Invert()
     {
         float Det = GetDeterminant();
         
@@ -140,7 +140,7 @@ namespace Math
     {
         Mat2 n( *this );
 
-        n.Inverse();
+        n.Invert();
 
         return n;
     }

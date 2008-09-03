@@ -35,6 +35,12 @@ namespace Demo
         //
         // Class members
         //
+
+    __M(
+        m_CgWVP,            Ptr<GL::CCgShadingProgram>,
+        m_UWorldViewProj,   Ptr<GL::IUniform>,
+        m_UColor,           Ptr<GL::IUniform>,
+        );
     };
 }
 

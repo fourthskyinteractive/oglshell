@@ -43,7 +43,7 @@
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
-				RuntimeLibrary="3"
+				RuntimeLibrary="1"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="Precompiled.h"
 				WarningLevel="3"
@@ -248,6 +248,14 @@
 			</File>
 			<File
 				RelativePath="..\Shared\Precompiled.h"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="MEDIA"
+			>
+			<File
+				RelativePath="..\..\..\Demos\MEDIA\Cg\WVP.cg"
 				>
 			</File>
 		</Filter>

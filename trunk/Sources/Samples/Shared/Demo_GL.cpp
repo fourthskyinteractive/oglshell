@@ -16,6 +16,14 @@ namespace Demo
                        ):
         IDemo( Instance, Width, Height, Caption )
     {
+        Vec3<float> Eye( 0.0f, 50.0f, 120.0f );
+        Vec3<float> At( 0.0f, 0.0f, 0.0f );
+        Vec3<float> Up( 0.0f, 1.0f, 0.0f );
+
+        m_View.LookAtRH( Eye, At, Up ); 
+        m_Proj.PerspectiveRH( 60.0f, (float)m_Width / (float)m_Height, 1.0f, 1000.0f );
+        m_Ortho.Ortho2DRH( 0.0f, m_Width, 0.0f, m_Height );
+
         try
         {
             CreateRender();
@@ -28,7 +36,22 @@ namespace Demo
         }
 
         //
-        // Driver description.
+        // Render
+        //
+
+        try
+        {
+            CreateRender();
+        }
+        catch (const Sys::CException& Ex)
+        {
+            DestroyRender();
+            
+            throw Ex;
+        }
+
+        //
+        // Driver description
         //
 
         GL::CDriver::GetDesc( &m_DriverDesc );
@@ -37,7 +60,7 @@ namespace Demo
         // Font
         //
 
-        GL::IFont::TDesc Desc;
+        GLU::CFont::TDesc Desc;
 
         Desc.Height = 14;
         Desc.Width = 0;
@@ -50,7 +73,9 @@ namespace Demo
         Desc.PitchAndFamily = FF_DONTCARE | DEFAULT_PITCH;
         wcscpy( Desc.FaceName, L"Microsoft Sans Serif" );
 
-        m_Font = new GL::CFont( Desc );
+        m_Font = new GLU::CBitmapFont( Desc );
+
+        m_Stack = new GLU::CMatrixStack();
     }
 
     //
@@ -66,61 +91,67 @@ namespace Demo
     //
     void CDemo_GL::CreateRender()
     {
-        GL::CWindowSwapChain::TPixelFormatDesc Desc;
+        GLW::CWindowSwapChain::TPixelFormatDesc Desc;
 
-        Desc.Flags = GL::CWindowSwapChain::WSC_DOUBLE_BUFFER;
-        Desc.PixelType = GL::CWindowSwapChain::PT_RGBA;
-        
-        Desc.NumColorBits = GetDeviceCaps( m_DC, BITSPIXEL );
-        if (Desc.NumColorBits >= 32)
+        //
+        // Window Pixel Format
+        //
+
+        Desc.Flags = GLW::CWindowSwapChain::WSC_DOUBLE_BUFFER;
+        Desc.ColorBitsCount = GetDeviceCaps( m_DC, BITSPIXEL );
+        if (Desc.ColorBitsCount >= 32)
         {
-            Desc.NumRedBits = 8;
+            Desc.RedBitsCount = 8;
             Desc.RedShift = 0;
-            Desc.NumGreenBits = 8;
+            Desc.GreenBitsCount = 8;
             Desc.GreenShift = 0;
-            Desc.NumBlueBits = 8;
+            Desc.BlueBitsCount = 8;
             Desc.BlueShift = 0;
-            Desc.NumAlphaBits = 8;
+            Desc.AlphaBitsCount = 8;
             Desc.AlphaShift = 0;
         }
         else
         {
-            Desc.NumRedBits = 5;
+            Desc.RedBitsCount = 5;
             Desc.RedShift = 0;
-            Desc.NumGreenBits = 6;
+            Desc.GreenBitsCount = 6;
             Desc.GreenShift = 0;
-            Desc.NumBlueBits = 5;
+            Desc.BlueBitsCount = 5;
             Desc.BlueShift = 0;
-            Desc.NumAlphaBits = 0;
+            Desc.AlphaBitsCount = 0;
             Desc.AlphaShift = 0;
         }
-        Desc.NumAccumBits = 0;
-        Desc.NumAccumRedBits = 0;
-        Desc.NumAccumGreenBits = 0;
-        Desc.NumAccumBlueBits = 0;
-        Desc.NumAccumAlphaBits = 0;
-        Desc.NumDepthBits = 24;
-        Desc.NumStencilBits = 8;
-        Desc.NumAuxBuffers = 0;
-        Desc.SampleDesc.NumBuffers = 1;
-        Desc.SampleDesc.NumSamples = 4;
+        Desc.AccumBitsCount = 0;
+        Desc.AccumRedBitsCount = 0;
+        Desc.AccumGreenBitsCount = 0;
+        Desc.AccumBlueBitsCount = 0;
+        Desc.AccumAlphaBitsCount = 0;
+        Desc.DepthBitsCount = 24;
+        Desc.StencilBitsCount = 8;
+        Desc.AuxBuffersCount = 0;
+        Desc.SampleDesc.BuffersCount = 1;
+        Desc.SampleDesc.SamplesCount = 0;
+        Desc.SampleDesc.QuincunxFilterNV = GL_TRUE;
 
         try
         {
-            m_WSSwapChain = new GL::CWindowSwapChain( m_Window, Desc, m_Width, m_Height );
+            m_WSSwapChain = new GLW::CWindowSwapChain( m_Window, Desc, m_Width, m_Height );
         }
         catch (...)
         {
-            Desc.SampleDesc.NumBuffers = 0;
-            Desc.SampleDesc.NumSamples = 0;
+            Desc.SampleDesc.SamplesCount = 0;
 
-            m_WSSwapChain = new GL::CWindowSwapChain( m_Window, Desc, m_Width, m_Height );
+            m_WSSwapChain = new GLW::CWindowSwapChain( m_Window, Desc, m_Width, m_Height );
         }
 
         if (glewInit() != GLEW_OK)
             throw Sys::CFatalException( this, "::CreateRender() : Failed to initialize OpenGL entry points." );
 
         m_WSSwapChain->SetVSync( false );
+
+        //
+        // Shell Library
+        //
 
         UINT Flags = 0;
     #ifdef _DEBUG
@@ -131,29 +162,20 @@ namespace Demo
         if (!m_Extensions->OpenGL_2_0)
             throw Sys::CFatalException( this, "::CreateRender() : No OpenGL 2.0 support detected." );
 
-    #ifdef _DEBUG
-        m_RenderDevice = new GL::CRenderDeviceDebug();
-    #else
-        m_RenderDevice = new GL::CRenderDeviceRelease();
-    #endif
-
         //
-        // Common OpenGL states
+        // States
         //
         
         glViewport( 0, 0, m_Width, m_Height );
-    
-        glMatrixMode( GL_PROJECTION );
-        glLoadIdentity();
-        gluPerspective( 60.0, (double)m_Width / (double)m_Height, 1.0, 1000.0 );
-        glMatrixMode( GL_MODELVIEW );
 
-        glEnable( GL_DEPTH_TEST );
-        glDepthFunc( GL_LESS );
+        // Rasterizer State
         glEnable( GL_CULL_FACE );
         glCullFace( GL_BACK );
         glEnable( GL_POINT_SMOOTH );
         glEnable( GL_LINE_SMOOTH );
+        // Depth State
+        glEnable( GL_DEPTH_TEST );
+        glDepthFunc( GL_LESS );
     }
 
     //
@@ -196,44 +218,5 @@ namespace Demo
         fclose( Stream );
         
         return ShaderStr;
-    }
-    
-    //
-    // BeginOrthoView
-    //
-    void CDemo_GL::BeginOrthoView(  
-                                  GLenum Mode 
-                                  ) const
-    {
-
-        GLint Viewport[ 4 ];
-
-        glGetIntegerv( GL_VIEWPORT, Viewport );
-
-        glMatrixMode( GL_PROJECTION );
-        glPushMatrix();
-        glLoadIdentity(); 
-        glOrtho( 0.0, Viewport[ 2 ], 0.0, Viewport[ 3 ], -1.0, 1.0 );
-
-        if (Mode == GL_UPPER_LEFT) 
-        {
-            glScalef( 1.0f, -1.0f, 1.0f );
-            glTranslatef( 0.0f, -Viewport[ 3 ] + 1.0f, 0.0f );
-        }
-
-        glMatrixMode( GL_MODELVIEW );
-        glPushMatrix();
-        glLoadIdentity();
-    }
-
-    //
-    // EndOrthoView
-    //
-    void CDemo_GL::EndOrthoView() const
-    {
-        glMatrixMode( GL_PROJECTION );
-        glPopMatrix();
-        glMatrixMode( GL_MODELVIEW );
-        glPopMatrix();
     }
 }

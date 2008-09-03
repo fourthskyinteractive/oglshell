@@ -18,34 +18,44 @@ You should have received a copy of the GNU Lesser General Public
 License along with this library. If not, see http://www.gnu.org/licenses
 */
 
-// Τΰιλ: /Math/UnitTest.h
+// Τΰιλ: /Math/Pch.h
 //
 
 #ifdef _MSC_VER
 #pragma once
-#endif
+#endif // _MSC_VER
 
-#ifndef __MATH_UNIT_TEST_H__
-#define __MATH_UNIT_TEST_H__
+#ifndef __PCH_H__
+#define __PCH_H__
 
-namespace Math
-{
-    //
+#ifdef _MSC_VER
+#pragma message ("------ Compiling project: Math ------")
+#endif // _MSC_VER
 
-    class CUnitTest
-    {
-    public:
+#include <assert.h>
 
-        //
-        // Interface
-        //
+#include <map>
+#include <vector>
 
-    private:
+using std::exception;
+using std::map;
+using std::vector;
 
-        //
-        // Class members
-        //
-    };
-}
+#include "Math.h"
+#include "Math_SIMD.h"
+#include "Vector/Vec.h"
+#include "Vector/Vec2.h"
+#include "Vector/Vec3.h"
+#include "Vector/Vec4.h"
+#include "Matrix/Mat.h"
+#include "Matrix/Mat2.h"
+#include "Matrix/Mat3.h"
+#include "Matrix/Mat43.h"
+#include "Matrix/Mat4.h"
+#include "Quaternion/Quat.h"
+#include "Quaternion/Quat4.h"
+#include "Quaternion/Quat3.h"
+#include "Plane/Plane.h"
+#include "Postponed.h"
 
-#endif // __MATH_UNIT_TEST_H__
+#endif // __PCH_H__

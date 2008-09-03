@@ -25,12 +25,12 @@ struct FS_OUTPUT
 //
 VS_OUTPUT VS(
              VS_INPUT In,
-             uniform float4x4 ModelViewProj : state.matrix.mvp
+             uniform float4x4 WorldViewProj
              )
 {
     VS_OUTPUT Out;
     
-    Out.Position = mul( ModelViewProj, In.Position );
+    Out.Position = mul( WorldViewProj, In.Position );
 
     return Out;
 }

@@ -281,7 +281,7 @@ namespace Math
     template <int N, typename T>
     inline float *Mat<N, T>::ToPtr()
     {
-        return &m[ 0 ][ 0 ];
+        return m[ 0 ].ToPtr();
     }
 
     //
@@ -290,7 +290,7 @@ namespace Math
     template <int N, typename T>
     inline const float *Mat<N, T>::ToPtr() const
     {   
-        return &m[ 0 ][ 0 ];
+        return m[ 0 ].ToPtr();
     }
 
     //
@@ -317,9 +317,7 @@ namespace Math
     template <int N, typename T>
     inline T& Mat<N, T>::operator [] (const int& n)
     {
-    #ifdef MATH_ASSERT_RANGES
-        assert( n >= 0 && n < N );
-    #endif
+        ASSERT_RANGE( n, 0, N );
         return m[ n ];
     }
 
@@ -329,9 +327,7 @@ namespace Math
     template <int N, typename T>
     inline const T& Mat<N, T>::operator [] (const int& n) const
     {
-    #ifdef MATH_ASSERT_RANGES
-        assert( n >= 0 && n < N );
-    #endif
+        ASSERT_RANGE( n, 0, N );
         return m[ n ];
     }
 }

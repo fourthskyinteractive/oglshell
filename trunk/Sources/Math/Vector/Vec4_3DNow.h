@@ -85,7 +85,7 @@ namespace MathSIMD
         Vec4_3DNow          operator - () const { return Vec4_3DNow( -x, -y, -z, -w ); }
 
         Vec4_3DNow&         operator *= (const float& s);                  
-        Vec4_3DNow&         operator *= (const Mat4_3DNow& m); // Ñì. Postpone.h
+        Vec4_3DNow&         operator *= (const Mat4_3DNow& m); // Cì. Postponed.h
         Vec4_3DNow&         operator /= (const float& s);
         Vec4_3DNow&         operator += (const float& s);
         Vec4_3DNow&         operator += (const Vec4_3DNow& v);

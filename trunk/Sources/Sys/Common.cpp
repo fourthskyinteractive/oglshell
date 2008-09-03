@@ -248,13 +248,6 @@ namespace Sys
     //
     // Constructor
     //
-    CFatalException::CFatalException()
-    {
-    }
-
-    //
-    // Constructor
-    //
     CDeveloperException::CDeveloperException( 
                                              EError Code, const char *FormatStr, ... 
                                              ):
@@ -264,7 +257,7 @@ namespace Sys
         va_list ArgList;
 
         SYS_VSPRINTF();
-        m_Str = CodeToString( Code ) + "\n" + string( Str );
+        m_Str = ToString( Code ) + "\n" + string( Str );
 
         Print( CLog::PT_DEVELOPER, m_Str.c_str() );
     }
@@ -275,7 +268,7 @@ namespace Sys
     CDeveloperException::CDeveloperException( 
                                              const IRTTIObject *Obj, const char *FormatStr, ... 
                                              ):
-        m_Code( ERR_NO_CODE )
+        m_Code( ERROR_OK )
     {
         char Str[MAX_STRING];
         va_list ArgList;
@@ -298,7 +291,7 @@ namespace Sys
         va_list ArgList;
 
         SYS_VSPRINTF();
-        m_Str = Obj->GetClassName() + "\n\n" + CodeToString( Code ) + "\n" + string( Str );
+        m_Str = Obj->GetClassName() + "\n\n" + ToString( Code ) + "\n" + string( Str );
 
         Print( CLog::PT_DEVELOPER, m_Str.c_str() );
     }
@@ -309,7 +302,7 @@ namespace Sys
     CDeveloperException::CDeveloperException( 
                                              const char *ClsName, const char *FormatStr, ... 
                                              ):
-        m_Code( ERR_NO_CODE )
+        m_Code( ERROR_OK )
     {
         char Str[ MAX_STRING ];
         va_list ArgList;
@@ -332,7 +325,7 @@ namespace Sys
         va_list ArgList;
 
         SYS_VSPRINTF();
-        m_Str = string( ClsName ) + "\n\n" + CodeToString( Code ) + "\n" + string( Str );
+        m_Str = string( ClsName ) + "\n\n" + ToString( Code ) + "\n" + string( Str );
 
         Print( CLog::PT_DEVELOPER, m_Str.c_str() );
     }
@@ -348,26 +341,26 @@ namespace Sys
     //
     // CodeToString
     //
-    string CDeveloperException::CodeToString( 
-                                             EError Code 
-                                             ) const
+    string CDeveloperException::ToString( 
+                                         EError Code 
+                                         ) const
     {
         switch (Code) 
         {
-        case ERR_INVALID_ENUM:
-            return "ERR_INVALID_ENUM";
-        case ERR_INVALID_VALUE:
-            return "ERR_INVALID_VALUE";
-        case ERR_INVALID_PARAMETER:
-            return "ERR_INVALID_PARAMETER";
-        case ERR_INVALID_RAW_POINTER:
-            return "ERR_INVALID_RAW_POINTER";
-        case ERR_INVALID_CALL:
-            return "ERR_INVALID_CALL";
-        case ERR_INVALID_THROW:
-            return "ERR_INVALID_THROW";
-        case ERR_METHOD_NOT_IMPLEMENTED:
-            return "ERR_METHOD_NOT_IMPLEMENTED";
+        case ERROR_OK:
+            return "ERROR_OK";
+        case ERROR_INVALID_ENUM:
+            return "ERROR_INVALID_ENUM";
+        case ERROR_INVALID_PARAM:
+            return "ERROR_INVALID_PARAM";
+        case ERROR_INVALID_RAW_POINTER:
+            return "ERROR_INVALID_RAW_POINTER";
+        case ERROR_INVALID_CALL:
+            return "ERROR_INVALID_CALL";
+        case ERROR_INVALID_THROW:
+            return "ERROR_INVALID_THROW";
+        case ERROR_METHOD_NOT_IMPLEMENTED:
+            return "ERROR_METHOD_NOT_IMPLEMENTED";
         }
 
         return "";

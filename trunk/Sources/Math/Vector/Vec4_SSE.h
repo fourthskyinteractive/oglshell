@@ -84,7 +84,7 @@ namespace MathSIMD
         Vec4_SSE            operator - () const { return Vec4_SSE( -x, -y, -z, -w ); }
 
         Vec4_SSE&           operator *= (const float& s);                  
-        Vec4_SSE&           operator *= (const Mat4_SSE& m); // Ñì. Postpone.h
+        Vec4_SSE&           operator *= (const Mat4_SSE& m); // Cì. Postponed.h
         Vec4_SSE&           operator /= (const float& s);
         Vec4_SSE&           operator += (const float& s);
         Vec4_SSE&           operator += (const Vec4_SSE& v);

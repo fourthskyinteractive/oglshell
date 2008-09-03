@@ -16,15 +16,17 @@
 #include <stdio.h>
 #include <stdarg.h>
 
+#include <algorithm>
 #include <map>
 #include <set>
+#include <stack>
 #include <string>
 #include <vector>
 
-using std::exception;
 using std::map;
 using std::set;
 using std::string;
+using std::stack;
 using std::vector;
 
 #ifdef _WIN32
@@ -78,12 +80,14 @@ using Sys::Ptr;
 #include "../../Math/Vector/Vec4.h"
 #include "../../Math/Vector/Vec4_SIMD.h"
 #include "../../Math/Vector/Vec4_SSE.h"
+#include "../../Math/Vector/Vec4_3DNow.h"
 #include "../../Math/Matrix/Mat.h"
 #include "../../Math/Matrix/Mat2.h"
 #include "../../Math/Matrix/Mat3.h"
 #include "../../Math/Matrix/Mat43.h"
 #include "../../Math/Matrix/Mat4.h"
 #include "../../Math/Plane/Plane.h"
+#include "../../Math/Plane/PlaneEx.h"
 #include "../../Math/Plane/Plane_SSE.h"
 #include "../../Math/Quaternion/Quat.h"
 #include "../../Math/Quaternion/Quat4.h"
@@ -96,6 +100,7 @@ using Math::Vec2;
 using Math::Vec3;
 using Math::Vec4;
 using MathSIMD::Vec4_SSE;
+using MathSIMD::Vec4_3DNow;
 using Math::Mat;
 using Math::Mat2;
 using Math::Mat3;
@@ -107,7 +112,7 @@ using Math::Quat4;
 using Math::Quat3;
 using MathSIMD::Quat4_SSE;
 
-#include "../../GL/Main.h"
+#include "../../GL/GL/Main.h"
 
 #include "../../Sys/RefCounterPost.h"
 
